@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Formulário de Orçamento</title>
+    <link rel="stylesheet" href="../static/css/estilo.css" th:href="@{/css/estilo.css}">
+</head>
+<body>
+<div>
+    <h1>Formulário de Orçamento</h1>
+    <form method="post" action="/orcamento">
+        <input type="hidden" name="_method" value="put" th:if="${orcamento != null}">
+        <input type="hidden" name="id" th:value="${orcamento?.id}">
+
+        <div>
+            <label for="cliente">Cliente:</label> 
+            <select id="cliente" name="clienteId" required>
+                <option value="">Selecione um cliente</option>
+                <option th:each="cliente : ${clientes}" 
+                        th:value="${cliente.id}" 
+                        th:text="${cliente.nome}"
+                        th:selected="${orcamento?.cliente?.id == cliente.id}"></option>
+            </select>
+        </div>
+
+        <div>
+            <label for="tema">Tema:</label> 
+            <select id="tema" name="temaId" required>
+                <option value="">Selecione um tema</option>
+                <option th:each="tema : ${temas}" 
+                        th:value="${tema.id}" 
+                        th:text="${tema.descricao}"
+                        th:selected="${orcamento?.tema?.id == tema.id}"></option>
+            </select>
+        </div>
+
+        <div>
+            <label for="itens">Itens:</label>
+            <div id="item-list">
+                <div class="item-entry" th:if="${orcamento == null || #lists.isEmpty(orcamento.itens)}">
+                    <select name="itens" required>
+                        <option value="">Selecione um item</option>
+                        <option th:each="item : ${items}" 
+                                th:value="${item.id}" 
+                                th:text="${item.descricao}"></option>
+                    </select>
+                    <button type="button" onclick="removeItem(this)">Remover</button>
+                </div>
+                <div th:each="itemOrcamento : ${orcamento?.itens}" class="item-entry">
+                    <select name="itens" required>
+                        <option value="">Selecione um item</option>
+                        <option th:each="item : ${items}" 
+                                th:value="${item.id}" 
+                                th:text="${item.descricao}" 
+                                th:selected="${item.id == itemOrcamento.id}"></option>
+                    </select>
+                    <button type="button" onclick="removeItem(this)">Remover</button>
+                </div>
+            </div>
+            <button type="button" onclick="addItem()">Adicionar Item</button>
+        </div>
+
+        <div>
+            <label for="dtHoraInicio">Data e Hora de Início:</label>
+            <input type="datetime-local" id="dtHoraInicio" name="dtHoraInicio" 
+                   th:value="${orcamento?.dtHoraInicio != null ? orcamento.dtHoraInicio.toString().substring(0, 16) : ''}" required>
+        </div>
+        
+        <div>
+            <label for="status">Status:</label>
+            <select id="status" name="status" required>
+                <!-- Solução 1: Se os status estão disponíveis no model -->
+                <option th:each="status : ${statusOrcamentoValues}" 
+                        th:value="${status}" 
+                        th:text="${status}"
+                        th:selected="${orcamento?.status == status}"></option>
+                
+                <!-- Solução 2: Alternativa se a solução 1 não funcionar
+                <option value="PENDENTE" th:selected="${orcamento?.status == 'PENDENTE'}">PENDENTE</option>
+                <option value="APROVADO" th:selected="${orcamento?.status == 'APROVADO'}">APROVADO</option>
+                <option value="CANCELADO" th:selected="${orcamento?.status == 'REPROVADO'}">REPROVADO</option>
+                 -->
+            </select>
+        </div>
+        
+        <div>
+            <label for="logradouro">Logradouro:</label>
+            <input type="text" id="logradouro" name="logradouro" 
+                   th:value="${orcamento?.logradouro}" required>
+        </div>
+        
+        <div>
+            <label for="bairro">Bairro:</label>
+            <input type="text" id="bairro" name="bairro" 
+                   th:value="${orcamento?.bairro}" required>
+        </div>
+        
+        <div>
+            <label for="cidade">Cidade:</label>
+            <input type="text" id="cidade" name="cidade" 
+                   th:value="${orcamento?.cidade}" required>
+        </div>
+        
+        <div>
+            <label for="uf">UF:</label>
+            <input type="text" id="uf" name="uf" 
+                   th:value="${orcamento?.uf}" maxlength="2" required>
+        </div>
+        
+        <div>
+            <label for="cep">CEP:</label>
+            <input type="text" id="cep" name="cep" 
+                   th:value="${orcamento?.cep}" required>
+        </div>
+        
+        <div th:if="${orcamento?.valorTotal != null}">
+            <label>Valor Total:</label>
+            <span th:text="${#numbers.formatDecimal(orcamento.valorTotal, 1, 2, 'POINT')}"></span>
+        </div>
+        
+        <input type="submit" th:value="${orcamento != null ? 'Atualizar' : 'Cadastrar'}">
+    </form>
+</div>
+
+<script>
+    function addItem() {
+        let itemList = document.getElementById('item-list');
+        let itemEntry = document.querySelector('.item-entry');
+        let newItemEntry = itemEntry.cloneNode(true);
+        let select = newItemEntry.querySelector('select');
+        select.selectedIndex = 0; 
+        itemList.appendChild(newItemEntry);
+    }
+
+    function removeItem(button) {
+        let itemEntry = button.parentElement;
+        let itemList = document.getElementById('item-list');
+        if (itemList.children.length > 1) {
+            itemList.removeChild(itemEntry);
+        } else {
+            alert('A lista deve conter pelo menos um item.');
+        }
+    }
+</script>
+</body>
+</html>
+</html>

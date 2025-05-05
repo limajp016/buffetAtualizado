@@ -1,0 +1,43 @@
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{index.html}">
+<head>
+<title>Lista de Itens</title>
+<link rel="stylesheet" href="../static/css/lista.css"
+	th:href="@{/css/lista.css}">
+</head>
+<body>
+	<div layout:fragment="conteudo">
+		<h1>Lista de Clientes</h1>
+		<a href="/cliente/formulario">Novo</a>
+		<table>
+			<thead>
+				<tr>
+					<th>Nome</th>
+					<th>CPF</th>
+					<th>Telefone</th>
+					<th>Email</th>
+					<th>Ações</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="cliente : ${listaClientes}">
+					<td th:text="${cliente.nome}"></td>
+					<td th:text="${cliente.cpf}"></td>
+					<td th:text="${cliente.telefone}"></td>
+					<td th:text="${cliente.email}"></td>
+					<td><a
+						th:href="@{/cliente/formulario?id={id}(id=${cliente.id})}"><button>Editar</button></a>
+						<form action="/cliente" method="post" style="display: inline;">
+							<input type="hidden" name="_method" value="delete"> <input
+								type="hidden" name="id" th:value="${cliente.id}"> <input
+								type="submit" value="Excluir">
+						</form></td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</body>
+</html>

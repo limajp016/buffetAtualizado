@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{index.html}">
+
+<head>
+<title>Cadastro Item</title>
+<link rel="stylesheet" hrefmehref="../static/css/estilo.css"
+	th:href="@{/css/estilo.css}">
+</head>
+
+<body>
+	<div layout:fragment="conteudo">
+		<div class="box">
+			<h1>Cadastro Item</h1>
+
+			<form method="post" action="/item" enctype="multipart/form-data">
+				<input type="hidden" name="_method" value="put"
+					th:if="${item != null}"> <input type="hidden" name="id"
+					th:value="${item?.id}">
+
+				<div>
+					<label for="descricao">Descrição:</label> <input type="text"
+						id="descricao" name="descricao" th:value="${item?.descricao}"
+						required>
+				</div>
+
+				<div>
+					<label for="campo-desc">Campo Descritivo:</label> <input
+						type="text" id="campo-desc" name="campoDesc"
+						th:value="${item?.campoDesc}" required>
+				</div>
+
+				<div>
+					<label for="valor-custo">Valor Custo:</label> <input type="number"
+						id="valor-custo" name="valorCusto" step="any"
+						pattern="[0-9]+([\.,][0-9]+)?" th:value="${item?.valorCusto}">
+				</div>
+
+				<div>
+					<label for="valor-venda">Valor Venda:</label> <input type="number"
+						id="valor-venda" name="valorVenda" step="any"
+						pattern="[0-9]+([\.,][0-9]+)?" th:value="${item?.valorVenda}">
+				</div>
+
+				<div>
+					<label for="categoria">Categoria:</label> <select id="categoria"
+						name="categoriaId" required>
+						<option th:each="categoria : ${categorias}"
+							th:value="${categoria.id}" th:text="${categoria.descricao}"
+							th:selected="${item?.categoria?.id} == ${categoria.id}">
+						</option>
+					</select>
+				</div>
+
+				<div>
+					<label for="imagem">Imagem do Item:</label> <input type="file"
+						id="imagem" name="imagem" accept="image/*">
+				</div>
+
+				<input type="submit" value="Cadastrar">
+			</form>
+		</div>
+	</div>
+</body>
+</html>

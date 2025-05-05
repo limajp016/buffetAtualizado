@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{index.html}">
+<head>
+	<meta charset="UTF-8">
+	<title>Lista de Temas</title>
+	<link rel="stylesheet" th:href="@{/css/lista.css}">
+</head>
+<body>
+	<div layout:fragment="conteudo">
+		<h1>Listagem de Temas</h1>
+		<a th:href="@{/tema/formulario}">Novo Tema</a>
+		<table>
+			<thead>
+				<tr>
+					<th>Descrição</th>
+					<th>Preço</th>
+					<th>Ações</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="tema : ${listaTemas}" th:if="${tema != null}">
+					<td th:text="${tema.descricao} ?: 'N/A'"></td>
+					<td th:text="${#numbers.formatCurrency(tema.preco)} ?: 'R$ 0,00'"></td>
+					<td>
+						<a th:href="@{/tema/formulario(id=${tema.id})}">
+							<button>Editar</button>
+						</a>
+						<form th:action="@{/tema}" method="post" th:method="delete" style="display: inline;">
+							<input type="hidden" name="id" th:value="${tema.id}" />
+							<button type="submit" onclick="return confirm('Tem certeza que deseja excluir?')">Excluir</button>
+						</form>
+					</td>
+				</tr>
+				<tr th:if="${#lists.isEmpty(listaTemas) or listaTemas == null}">
+					<td colspan="3">Nenhum tema encontrado.</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</body>
+</html>
+

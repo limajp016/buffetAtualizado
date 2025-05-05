@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{index.html}">
+<head>
+	<meta charset="UTF-8">
+	<title>Lista de Itens</title>
+	<link rel="stylesheet" th:href="@{/css/lista.css}">
+	<style>
+		.item-img {
+			width: 80px;
+			height: auto;
+			border-radius: 6px;
+		}
+	</style>
+</head>
+<body>
+	<div layout:fragment="conteudo">
+		<h1>Listagem de Itens</h1>
+		<a th:href="@{/item/formulario}">Novo Item</a>
+		<table>
+			<thead>
+				<tr>
+					<th>Imagem</th>
+					<th>Descrição</th>
+					<th>Valor Venda</th>
+					<th>Campo Descritivo</th>
+					<th>Categoria</th>
+					<th>Ações</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="item : ${listaItens}" th:if="${item != null}">
+					<td>
+						<img th:if="${item.imagemBase64 != null}"
+							th:src="'data:image/jpeg;base64,' + ${item.imagemBase64}"
+							class="item-img" alt="Imagem" />
+					</td>
+					<td th:text="${item.descricao} ?: 'N/A'"></td>
+					<td th:text="${#numbers.formatCurrency(item.valorVenda)} ?: 'R$ 0,00'"></td>
+					<td th:text="${item.campoDesc} ?: 'N/A'"></td>
+					<td th:text="${item.categoria?.descricao} ?: 'N/A'"></td>
+					<td>
+						<a th:href="@{/item/formulario(id=${item.id})}">
+							<button>Editar</button>
+						</a>
+						<form th:action="@{/item}" method="post" th:method="delete" style="display: inline;">
+							<input type="hidden" name="id" th:value="${item.id}" />
+							<button type="submit" onclick="return confirm('Tem certeza que deseja excluir?')">Excluir</button>
+						</form>
+					</td>
+				</tr>
+				<tr th:if="${#lists.isEmpty(listaItens) or listaItens == null}">
+					<td colspan="6">Nenhum item encontrado.</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</body>
+</html>

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{index.html}">
+<head>
+<title>Cadastro de Categoria</title>
+<link rel="stylesheet" href="../static/css/estilo.css"
+	th:href="@{/css/estilo.css}">
+</head>
+<body>
+	<div layout:fragment="conteudo">
+		<div class="box">
+			<h1>Cadastro de Categoria</h1>
+			<form method="post" action="/categoria">
+				<input type="hidden" name="_method" value="put"
+					th:if="${categoria != null}"> <input type="hidden"
+					name="id" th:value="${categoria?.id}">
+
+				<div>
+					<label for="descricao">Descrição:</label> <input type="text"
+						id="descricao" name="descricao" th:value="${categoria?.descricao}"
+						required>
+				</div>
+
+				<input type="submit" value="Cadastrar">
+			</form>
+		</div>
+	</div>
+</body>
+</html>

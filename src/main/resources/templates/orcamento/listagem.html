@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Lista de Orçamentos</title>
+    <link rel="stylesheet" href="../static/css/lista.css"
+	th:href="@{/css/lista.css}">
+</head>
+<body>
+    <div>
+        <h1>Listagem de Orçamentos</h1>
+        <a th:href="@{/orcamento/formulario}">Novo Orçamento</a>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Cliente</th>
+                    <th>Tema</th>
+                    <th>Data/Hora Início</th>
+                    <th>Valor Total</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="orcamento : ${orcamentos}"
+                    th:if="${orcamento != null}">
+                    <td th:text="${orcamento.id}"></td>
+                    <td th:text="${orcamento.cliente?.nome} ?: 'N/A'"></td>
+                    <td th:text="${orcamento.tema?.descricao} ?: 'N/A'"></td>
+                    <td th:text="${orcamento.dtHoraInicio != null} ? ${#temporals.format(orcamento.dtHoraInicio, 'dd/MM/yyyy HH:mm')} : 'N/A'"></td>
+                    <td th:text="${orcamento.valorTotal != null} ? 'R$ ' + ${#numbers.formatDecimal(orcamento.valorTotal, 1, 2, 'POINT')} : 'R$ 0,00'"></td>
+                    <td th:text="${orcamento.status} ?: 'N/A'"></td>
+                    <td class="actions">
+                        <a th:href="@{/orcamento/formulario(id=${orcamento.id})}">
+                            <button>Editar</button>
+                        </a>
+                        <form th:action="@{/orcamento}" method="post" th:method="delete" style="display: inline;">
+                            <input type="hidden" name="id" th:value="${orcamento.id}" />
+                            <button type="submit" onclick="return confirm('Tem certeza que deseja excluir este orçamento?')">
+                                Excluir
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(orcamentos)}">
+                    <td colspan="7">Nenhum orçamento encontrado.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

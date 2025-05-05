@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{index.html}">
+<head>
+    <meta charset="UTF-8">
+    <title>Lista de Pedidos</title>
+    <link rel="stylesheet" th:href="@{/css/lista.css}">
+</head>
+<body>
+    <div layout:fragment="conteudo">
+        <h1>Listagem de Pedidos</h1>
+        <a th:href="@{/pedido/formulario}">Novo Pedido</a>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Cliente</th>
+                    <th>Valor Total</th>
+                    <th>Data/Hora Início</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="pedido : ${listaPedidos}" th:if="${pedido != null}">
+                    <td th:text="${pedido.id}"></td>
+                    <td th:text="${pedido.orcamento.cliente.nome} ?: 'N/A'"></td>
+                    <td th:text="${#numbers.formatCurrency(pedido.valorTotal)}"></td>
+                    <td th:text="${#temporals.format(pedido.dtHoraInicio, 'dd/MM/yyyy HH:mm')}"></td>
+                    <td>
+                        <a th:href="@{/pedido/formulario(id=${pedido.id})}">
+                            <button>Editar</button>
+                        </a>
+                        <form th:action="@{/pedido}" method="post" th:method="delete" style="display: inline;">
+                            <input type="hidden" name="id" th:value="${pedido.id}" />
+                            <button type="submit" onclick="return confirm('Tem certeza que deseja excluir este pedido?')">Excluir</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(listaPedidos) or listaPedidos == null}">
+                    <td colspan="5">Nenhum pedido encontrado.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
