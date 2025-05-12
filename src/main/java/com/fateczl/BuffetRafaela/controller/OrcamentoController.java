@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.fateczl.BuffetRafaela.entities.Orcamento;
 import com.fateczl.BuffetRafaela.entities.enums.StatusOrcamento;
@@ -63,28 +64,64 @@ public class OrcamentoController {
     
     @PostMapping
     @Transactional
-    public String cadastrar(@RequestParam Long clienteId,
-                            @RequestParam Long temaId,
-                            @RequestParam List<Long> itens,
-                            @Valid DadosCadastroOrcamento dados) {
-        var cliente = clienteRepository.findById(clienteId)
-                                        .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado"));
-        var tema = temaRepository.findById(temaId)
-                                .orElseThrow(() -> new IllegalArgumentException("Tema não encontrado"));
-        var orcamento = new Orcamento(dados);
-        orcamento.setCliente(cliente);
-        orcamento.setTema(tema);
-        
-        for (Long itemId : itens) {
-            var item = itemRepository.findById(itemId)
-                                    .orElseThrow(() -> new IllegalArgumentException("Item não encontrado: " + itemId));
-            orcamento.addItem(item);
-        }
+    public String cadastrar(@RequestParam long clienteId,
+                          @RequestParam long temaId,
+                          @RequestParam List<Long> itens,
+                          @Valid DadosCadastroOrcamento dados,
+                          RedirectAttributes redirectAttributes,
+                          Model model) {
 
-        orcamento.setValorTotal();
-        
-        orcamentoRepository.save(orcamento);
-        return "redirect:/orcamento";
+        try {
+            if (orcamentoRepository.existsByDataAndLocalAndEndereco(
+                    dados.dtHoraInicio(),
+                    dados.logradouro(),
+                    dados.bairro(),
+                    dados.cidade(),
+                    dados.uf(),
+                    dados.cep())) {
+                model.addAttribute("error", "Já existe um orçamento com mesma data, local e endereço");
+                return carregarFormularioNovo(model, clienteId, temaId, itens, dados);
+            }
+
+            var cliente = clienteRepository.findById(clienteId)
+                .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado"));
+            var tema = temaRepository.findById(temaId)
+                .orElseThrow(() -> new IllegalArgumentException("Tema não encontrado"));
+            
+            var orcamento = new Orcamento(dados);
+            orcamento.setCliente(cliente);
+            orcamento.setTema(tema);
+
+            for (Long itemId : itens) {
+                var item = itemRepository.findById(itemId)
+                    .orElseThrow(() -> new IllegalArgumentException("Item não encontrado: " + itemId));
+                orcamento.addItem(item);
+            }
+
+            orcamento.setValorTotal();
+            orcamentoRepository.save(orcamento);
+            redirectAttributes.addFlashAttribute("success", "Orçamento cadastrado com sucesso!");
+            return "redirect:/orcamento";
+            
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("error", e.getMessage());
+            return carregarFormularioNovo(model, clienteId, temaId, itens, dados);
+        } catch (Exception e) {
+            model.addAttribute("error", "Erro ao cadastrar orçamento: " + e.getMessage());
+            return carregarFormularioNovo(model, clienteId, temaId, itens, dados);
+        }
+    }
+
+    private String carregarFormularioNovo(Model model, Long clienteId, Long temaId, List<Long> itens, DadosCadastroOrcamento dados) {
+        model.addAttribute("clientes", clienteRepository.findAll());
+        model.addAttribute("temas", temaRepository.findAll());
+        model.addAttribute("items", itemRepository.findAll());
+        model.addAttribute("clienteId", clienteId);
+        model.addAttribute("temaId", temaId);
+        model.addAttribute("itens", itens);
+        model.addAttribute("dados", dados);
+        model.addAttribute("statusOrcamentoValues", StatusOrcamento.values());
+        return "orcamento/formulario";
     }
     
     @PutMapping
@@ -93,28 +130,71 @@ public class OrcamentoController {
                             @RequestParam Long clienteId,
                             @RequestParam Long temaId,
                             @RequestParam List<Long> itens,
-                            @Valid DadosAtualizacaoOrcamento dados) {
-        var orcamento = orcamentoRepository.findById(id)
-                                       .orElseThrow(() -> new IllegalArgumentException("Aluguel não encontrado"));
-        var cliente = clienteRepository.findById(clienteId)
-                                       .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado"));
-        var tema = temaRepository.findById(temaId)
-                                 .orElseThrow(() -> new IllegalArgumentException("Tema não encontrado"));
-        
-        orcamento.setCliente(cliente);
-        orcamento.setTema(tema);
-        orcamento.atualizarInformacoes(dados);
+                            @Valid DadosAtualizacaoOrcamento dados,
+                            RedirectAttributes redirectAttributes,
+                            Model model) {
+        try {
+            var orcamento = orcamentoRepository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Orçamento não encontrado"));
+            
+            boolean existeConflito = orcamentoRepository.existsByDataAndLocalAndEnderecoExcluindoId(
+                dados.dtHoraInicio(),
+                dados.logradouro(),
+                dados.bairro(),
+                dados.cidade(),
+                dados.uf(),
+                dados.cep(),
+                orcamento.getId()
+            );
 
-        for (Long itemId : itens) {
-            var item = itemRepository.findById(itemId)
-                                     .orElseThrow(() -> new IllegalArgumentException("Item não encontrado: " + itemId));
-            orcamento.addItem(item);
+            if (existeConflito) {
+                model.addAttribute("error", "Já existe outro orçamento com mesma data, local e endereço");
+                return carregarFormularioEdicao(id, model, clienteId, temaId, itens, dados);
+            }
+
+            var cliente = clienteRepository.findById(clienteId)
+                    .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado"));
+            var tema = temaRepository.findById(temaId)
+                    .orElseThrow(() -> new IllegalArgumentException("Tema não encontrado"));
+
+            orcamento.setCliente(cliente);
+            orcamento.setTema(tema);
+            orcamento.atualizarInformacoes(dados);
+
+            for (Long itemId : itens) {
+                var item = itemRepository.findById(itemId)
+                        .orElseThrow(() -> new IllegalArgumentException("Item não encontrado: " + itemId));
+                orcamento.addItem(item);
+            }
+
+            orcamento.setValorTotal();
+            orcamentoRepository.save(orcamento);
+            redirectAttributes.addFlashAttribute("success", "Orçamento atualizado com sucesso!");
+            return "redirect:/orcamento";
+
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("error", e.getMessage());
+            return carregarFormularioEdicao(id, model, clienteId, temaId, itens, dados);
+        } catch (Exception e) {
+            model.addAttribute("error", "Erro ao atualizar orçamento: " + e.getMessage());
+            return carregarFormularioEdicao(id, model, clienteId, temaId, itens, dados);
         }
+    }
 
-        orcamento.setValorTotal();
+    private String carregarFormularioEdicao(Long id, Model model, Long clienteId, Long temaId, List<Long> itens, DadosAtualizacaoOrcamento dados) {
+        var orcamento = orcamentoRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Orçamento não encontrado"));
         
-        orcamentoRepository.save(orcamento);
-        return "redirect:/orcamento";
+        model.addAttribute("orcamento", orcamento);
+        model.addAttribute("clientes", clienteRepository.findAll());
+        model.addAttribute("temas", temaRepository.findAll());
+        model.addAttribute("items", itemRepository.findAll());
+        model.addAttribute("clienteId", clienteId);
+        model.addAttribute("temaId", temaId);
+        model.addAttribute("itens", itens);
+        model.addAttribute("dados", dados);
+        model.addAttribute("statusOrcamentoValues", StatusOrcamento.values());
+        return "orcamento/formulario";
     }
     
     @DeleteMapping

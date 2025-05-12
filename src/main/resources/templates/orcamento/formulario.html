@@ -4,10 +4,44 @@
     <meta charset="UTF-8">
     <title>Formulário de Orçamento</title>
     <link rel="stylesheet" href="../static/css/estilo.css" th:href="@{/css/estilo.css}">
+    
+    <style>
+        .alert {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    
+    </style>
 </head>
 <body>
 <div>
     <h1>Formulário de Orçamento</h1>
+ 
+    <div th:if="${success}" class="alert alert-success">
+        <span th:text="${success}"></span>
+        <button type="button" class="close" onclick="this.parentElement.style.display='none'">&times;</button>
+    </div>
+    
+    <div th:if="${error}" class="alert alert-danger">
+        <span th:text="${error}"></span>
+        <button type="button" class="close" onclick="this.parentElement.style.display='none'">&times;</button>
+    </div>
+
     <form method="post" action="/orcamento">
         <input type="hidden" name="_method" value="put" th:if="${orcamento != null}">
         <input type="hidden" name="id" th:value="${orcamento?.id}">
@@ -69,18 +103,12 @@
         <div>
             <label for="status">Status:</label>
             <select id="status" name="status" required>
-                <!-- Solução 1: Se os status estão disponíveis no model -->
-                <option th:each="status : ${statusOrcamentoValues}" 
-                        th:value="${status}" 
-                        th:text="${status}"
-                        th:selected="${orcamento?.status == status}"></option>
-                
-                <!-- Solução 2: Alternativa se a solução 1 não funcionar
-                <option value="PENDENTE" th:selected="${orcamento?.status == 'PENDENTE'}">PENDENTE</option>
-                <option value="APROVADO" th:selected="${orcamento?.status == 'APROVADO'}">APROVADO</option>
-                <option value="CANCELADO" th:selected="${orcamento?.status == 'REPROVADO'}">REPROVADO</option>
-                 -->
-            </select>
+        	<option value="">Selecione um status</option>
+        	<option th:each="status : ${statusOrcamentoValues}" 
+                	th:value="${status}" 
+                	th:text="${status}"
+               		th:selected="${orcamento?.status == status}"></option>
+    		</select>
         </div>
         
         <div>
@@ -141,7 +169,13 @@
             alert('A lista deve conter pelo menos um item.');
         }
     }
+    
+    setTimeout(() => {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => {
+            alert.style.display = 'none';
+        });
+    }, 5000);
 </script>
 </body>
-</html>
 </html>
