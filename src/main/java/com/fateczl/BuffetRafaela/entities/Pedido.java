@@ -25,7 +25,7 @@ import lombok.Setter;
 public class Pedido {
 	
 	@Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "pedido_id")
     private Long id;
 	

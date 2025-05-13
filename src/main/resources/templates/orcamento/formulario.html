@@ -25,24 +25,39 @@
             color: #721c24;
             border: 1px solid #f5c6cb;
         }
-    
+
+        .item-entry {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .item-entry select, .item-entry input[type="number"] {
+            flex: 1;
+        }
+
+        .item-entry button {
+            flex: 0 0 auto;
+        }
     </style>
 </head>
 <body>
+<body>
 <div>
     <h1>Formulário de Orçamento</h1>
- 
+
     <div th:if="${success}" class="alert alert-success">
         <span th:text="${success}"></span>
-        <button type="button" class="close" onclick="this.parentElement.style.display='none'">&times;</button>
-    </div>
-    
-    <div th:if="${error}" class="alert alert-danger">
-        <span th:text="${error}"></span>
-        <button type="button" class="close" onclick="this.parentElement.style.display='none'">&times;</button>
+        <button type="button" class="close" onclick="this.parentElement.style.display='none'">×</button>
     </div>
 
-    <form method="post" action="/orcamento">
+    <div th:if="${error}" class="alert alert-danger">
+        <span th:text="${error}"></span>
+        <button type="button" class="close" onclick="this.parentElement.style.display='none'">×</button>
+    </div>
+
+    <form th:action="@{/orcamento}" method="post">
         <input type="hidden" name="_method" value="put" th:if="${orcamento != null}">
         <input type="hidden" name="id" th:value="${orcamento?.id}">
 
@@ -57,41 +72,53 @@
             </select>
         </div>
 
-        <div>
-            <label for="tema">Tema:</label> 
-            <select id="tema" name="temaId" required>
-                <option value="">Selecione um tema</option>
-                <option th:each="tema : ${temas}" 
-                        th:value="${tema.id}" 
-                        th:text="${tema.descricao}"
-                        th:selected="${orcamento?.tema?.id == tema.id}"></option>
-            </select>
-        </div>
+ 		<div>
+    	<label for="tema">Tema:</label>
+    		<select id="tema" name="temaId" required onchange="atualizarValorTotal()">
+        		<option value="">Selecione um tema</option>
+        		<option th:each="tema : ${temas}" 
+                		th:value="${tema.id}" 
+                		th:text="${tema.descricao}"
+                		th:attr="data-preco=${tema.preco}"
+                		th:selected="${orcamento?.tema?.id == tema.id}">
+        		</option>
+    		</select>
+		</div>
 
         <div>
             <label for="itens">Itens:</label>
             <div id="item-list">
-                <div class="item-entry" th:if="${orcamento == null || #lists.isEmpty(orcamento.itens)}">
-                    <select name="itens" required>
+                <div class="item-entry" th:if="${orcamento == null || #lists.isEmpty(orcamento.orcamentoItens)}">
+                    <select name="itemIds" required onchange="checkDuplicates()">
                         <option value="">Selecione um item</option>
                         <option th:each="item : ${items}" 
                                 th:value="${item.id}" 
-                                th:text="${item.descricao}"></option>
+                                th:text="${item.descricao}"
+                                th:attr="data-preco=${item.valorVenda}"></option>
                     </select>
+                    <input type="number" name="quantidades" min="1" value="1" required />
                     <button type="button" onclick="removeItem(this)">Remover</button>
                 </div>
-                <div th:each="itemOrcamento : ${orcamento?.itens}" class="item-entry">
-                    <select name="itens" required>
+                <div th:each="itemOrcamento : ${orcamento?.orcamentoItens}" class="item-entry">
+                    <select name="itemIds" required onchange="checkDuplicates()">
                         <option value="">Selecione um item</option>
                         <option th:each="item : ${items}" 
                                 th:value="${item.id}" 
-                                th:text="${item.descricao}" 
-                                th:selected="${item.id == itemOrcamento.id}"></option>
+                                th:text="${item.descricao}"
+                                th:attr="data-preco=${item.valorVenda}"
+                                th:selected="${item.id == itemOrcamento.item.id}"></option>
                     </select>
+                    <input type="number" name="quantidades" min="1" 
+                           th:value="${itemOrcamento.quantidade}" required />
                     <button type="button" onclick="removeItem(this)">Remover</button>
                 </div>
             </div>
             <button type="button" onclick="addItem()">Adicionar Item</button>
+        </div>
+
+        <div style="margin-top: 10px;">
+            <label>Valor Total:</label>
+            <span id="valor-total">R$ 0,00</span>
         </div>
 
         <div>
@@ -99,65 +126,58 @@
             <input type="datetime-local" id="dtHoraInicio" name="dtHoraInicio" 
                    th:value="${orcamento?.dtHoraInicio != null ? orcamento.dtHoraInicio.toString().substring(0, 16) : ''}" required>
         </div>
-        
+
         <div>
             <label for="status">Status:</label>
             <select id="status" name="status" required>
-        	<option value="">Selecione um status</option>
-        	<option th:each="status : ${statusOrcamentoValues}" 
-                	th:value="${status}" 
-                	th:text="${status}"
-               		th:selected="${orcamento?.status == status}"></option>
-    		</select>
+                <option value="">Selecione um status</option>
+                <option th:each="status : ${statusOrcamentoValues}" 
+                        th:value="${status}" 
+                        th:text="${status}"
+                        th:selected="${orcamento?.status == status}"></option>
+            </select>
         </div>
-        
-        <div>
-            <label for="logradouro">Logradouro:</label>
-            <input type="text" id="logradouro" name="logradouro" 
-                   th:value="${orcamento?.logradouro}" required>
+
+        <div><label for="logradouro">Logradouro:</label>
+            <input type="text" id="logradouro" name="logradouro" th:value="${orcamento?.logradouro}" required>
         </div>
-        
-        <div>
-            <label for="bairro">Bairro:</label>
-            <input type="text" id="bairro" name="bairro" 
-                   th:value="${orcamento?.bairro}" required>
+
+        <div><label for="bairro">Bairro:</label>
+            <input type="text" id="bairro" name="bairro" th:value="${orcamento?.bairro}" required>
         </div>
-        
-        <div>
-            <label for="cidade">Cidade:</label>
-            <input type="text" id="cidade" name="cidade" 
-                   th:value="${orcamento?.cidade}" required>
+
+        <div><label for="cidade">Cidade:</label>
+            <input type="text" id="cidade" name="cidade" th:value="${orcamento?.cidade}" required>
         </div>
-        
-        <div>
-            <label for="uf">UF:</label>
-            <input type="text" id="uf" name="uf" 
-                   th:value="${orcamento?.uf}" maxlength="2" required>
+
+        <div><label for="uf">UF:</label>
+            <input type="text" id="uf" name="uf" th:value="${orcamento?.uf}" maxlength="2" required>
         </div>
-        
-        <div>
-            <label for="cep">CEP:</label>
-            <input type="text" id="cep" name="cep" 
-                   th:value="${orcamento?.cep}" required>
+
+        <div><label for="cep">CEP:</label>
+            <input type="text" id="cep" name="cep" th:value="${orcamento?.cep}" required>
         </div>
-        
-        <div th:if="${orcamento?.valorTotal != null}">
-            <label>Valor Total:</label>
-            <span th:text="${#numbers.formatDecimal(orcamento.valorTotal, 1, 2, 'POINT')}"></span>
-        </div>
-        
+
         <input type="submit" th:value="${orcamento != null ? 'Atualizar' : 'Cadastrar'}">
     </form>
 </div>
 
+<!-- SCRIPT -->
 <script>
     function addItem() {
         let itemList = document.getElementById('item-list');
         let itemEntry = document.querySelector('.item-entry');
         let newItemEntry = itemEntry.cloneNode(true);
+
         let select = newItemEntry.querySelector('select');
-        select.selectedIndex = 0; 
+        select.selectedIndex = 0;
+
+        let quantidadeInput = newItemEntry.querySelector('input[type="number"]');
+        quantidadeInput.value = 1;
+
         itemList.appendChild(newItemEntry);
+        checkDuplicates();
+        atualizarValorTotal();
     }
 
     function removeItem(button) {
@@ -165,11 +185,58 @@
         let itemList = document.getElementById('item-list');
         if (itemList.children.length > 1) {
             itemList.removeChild(itemEntry);
+            checkDuplicates();
+            atualizarValorTotal();
         } else {
             alert('A lista deve conter pelo menos um item.');
         }
     }
-    
+
+    function checkDuplicates() {
+        let selects = document.querySelectorAll('select[name="itemIds"]');
+        let selectedValues = [];
+        let hasDuplicates = false;
+
+        selects.forEach((select) => {
+            let value = select.value;
+            if (value && selectedValues.includes(value)) {
+                hasDuplicates = true;
+                select.style.border = '2px solid red';
+            } else {
+                select.style.border = '';
+                if (value) selectedValues.push(value);
+            }
+        });
+
+        if (hasDuplicates) {
+            alert('Não é permitido selecionar itens duplicados. Por favor, ajuste sua seleção.');
+        }
+    }
+
+    function atualizarValorTotal() {
+        let total = 0;
+
+        document.querySelectorAll('.item-entry').forEach(entry => {
+            const select = entry.querySelector('select[name="itemIds"]');
+            const quantidade = entry.querySelector('input[name="quantidades"]');
+            const preco = parseFloat(select.options[select.selectedIndex]?.dataset.preco || 0);
+            const qtd = parseInt(quantidade.value) || 0;
+
+            total += preco * qtd;
+        });
+
+        const temaSelect = document.getElementById('tema');
+        const temaPreco = parseFloat(temaSelect.options[temaSelect.selectedIndex]?.dataset.preco || 0);
+        total += temaPreco;
+
+        const valorFormatado = total.toLocaleString('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
+        });
+
+        document.getElementById('valor-total').innerText = valorFormatado;
+    }
+
     setTimeout(() => {
         const alerts = document.querySelectorAll('.alert');
         alerts.forEach(alert => {
@@ -178,4 +245,3 @@
     }, 5000);
 </script>
 </body>
-</html>
