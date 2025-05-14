@@ -96,7 +96,7 @@
                                 th:text="${item.descricao}"
                                 th:attr="data-preco=${item.valorVenda}"></option>
                     </select>
-                    <input type="number" name="quantidades" min="1" value="1" required />
+                    <input type="number" name="quantidades" min="1" value="1" required onchange="atualizarValorTotal()" />
                     <button type="button" onclick="removeItem(this)">Remover</button>
                 </div>
                 <div th:each="itemOrcamento : ${orcamento?.orcamentoItens}" class="item-entry">
@@ -109,7 +109,8 @@
                                 th:selected="${item.id == itemOrcamento.item.id}"></option>
                     </select>
                     <input type="number" name="quantidades" min="1" 
-                           th:value="${itemOrcamento.quantidade}" required />
+       						th:value="${itemOrcamento.quantidade}" required 
+       						onchange="atualizarValorTotal()" />
                     <button type="button" onclick="removeItem(this)">Remover</button>
                 </div>
             </div>
@@ -162,7 +163,6 @@
     </form>
 </div>
 
-<!-- SCRIPT -->
 <script>
     function addItem() {
         let itemList = document.getElementById('item-list');
@@ -243,5 +243,7 @@
             alert.style.display = 'none';
         });
     }, 5000);
+
+    window.onload = atualizarValorTotal;
 </script>
 </body>

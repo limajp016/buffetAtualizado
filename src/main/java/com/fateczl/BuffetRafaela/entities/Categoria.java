@@ -6,7 +6,6 @@ import java.util.List;
 import com.fateczl.BuffetRafaela.records.DadosAtualizacaoCategoria;
 import com.fateczl.BuffetRafaela.records.DadosCadastroCategoria;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -30,7 +29,7 @@ public class Categoria {
     @Column(name = "descricao")
     private String descricao;
     
-    @OneToMany(mappedBy = "categoria", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "categoria")
     private List<Item> itens = new ArrayList<>();
     
     public Categoria() {
