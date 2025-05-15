@@ -57,13 +57,13 @@ public class CategoriaController {
     }
 	
 	 @PutMapping
-	    @Transactional
-	    public String atualizar(@Valid DadosAtualizacaoCategoria dados, RedirectAttributes redirectAttributes) {
-	        var item = repository.getReferenceById(dados.id());
-	        item.atualizarInformacoes(dados);
-	        redirectAttributes.addFlashAttribute("mensagem", "Categoria atualizada com sucesso!");
-	        return "redirect:/categoria";
-	    }
+	 @Transactional
+	 public String atualizar(@Valid DadosAtualizacaoCategoria dados, RedirectAttributes redirectAttributes) {
+		 var item = repository.getReferenceById(dados.id());
+	     item.atualizarInformacoes(dados);
+	     redirectAttributes.addFlashAttribute("mensagem", "Categoria atualizada com sucesso!");
+	     return "redirect:/categoria";
+	 }
 	
 	 @DeleteMapping
 	 @Transactional

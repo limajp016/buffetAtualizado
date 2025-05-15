@@ -54,5 +54,7 @@ public interface OrcamentoRepository extends JpaRepository<Orcamento, Long> {
 		                                                    @Param("id") Long id);
 	
 	boolean existsByClienteId(Long clienteId);
+	
+	boolean existsByTemaId(Long temaId);
 
 }
