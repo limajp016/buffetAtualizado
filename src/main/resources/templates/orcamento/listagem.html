@@ -1,53 +1,217 @@
 <!DOCTYPE html>
-<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{index.html}">
 <head>
     <meta charset="UTF-8">
     <title>Lista de Orçamentos</title>
-    <link rel="stylesheet" href="../static/css/lista.css"
-	th:href="@{/css/lista.css}">
+    <link rel="stylesheet" th:href="@{/css/estilo.css}">
+    <style>
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #343a40;
+            margin: 0;
+        }
+
+        .btn-novo {
+            background-color: #28a745;
+            color: white;
+            padding: 8px 16px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+
+        .btn-novo:hover {
+            background-color: #218838;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        th {
+            background-color: #007bff;
+            color: white;
+            font-weight: 500;
+        }
+
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .btn-acoes {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-editar, .btn-excluir {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.3s;
+        }
+
+        .btn-editar {
+            background-color: #ffc107;
+            color: #212529;
+            text-decoration: none;
+        }
+
+        .btn-editar:hover {
+            background-color: #e0a800;
+        }
+
+        .btn-excluir {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .btn-excluir:hover {
+            background-color: #c82333;
+        }
+
+        .alert {
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            font-weight: bold;
+            text-align: center;
+            position: relative;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .close {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            font-size: 1.2em;
+            line-height: 1;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+            font-style: italic;
+        }
+    </style>
 </head>
 <body>
-    <div>
-        <h1>Listagem de Orçamentos</h1>
-        <a th:href="@{/orcamento/formulario}">Novo Orçamento</a>
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Cliente</th>
-                    <th>Tema</th>
-                    <th>Data/Hora Início</th>
-                    <th>Valor Total</th>
-                    <th>Status</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr th:each="orcamento : ${orcamentos}"
-                    th:if="${orcamento != null}">
-                    <td th:text="${orcamento.id}"></td>
-                    <td th:text="${orcamento.cliente?.nome} ?: 'N/A'"></td>
-                    <td th:text="${orcamento.tema?.descricao} ?: 'N/A'"></td>
-                    <td th:text="${orcamento.dtHoraInicio != null} ? ${#temporals.format(orcamento.dtHoraInicio, 'dd/MM/yyyy HH:mm')} : 'N/A'"></td>
-                    <td th:text="${orcamento.valorTotal != null} ? 'R$ ' + ${#numbers.formatDecimal(orcamento.valorTotal, 1, 2, 'POINT')} : 'R$ 0,00'"></td>
-                    <td th:text="${orcamento.status} ?: 'N/A'"></td>
-                    <td class="actions">
-                        <a th:href="@{/orcamento/formulario(id=${orcamento.id})}">
-                            <button>Editar</button>
-                        </a>
-                        <form th:action="@{/orcamento}" method="post" th:method="delete" style="display: inline;">
-                            <input type="hidden" name="id" th:value="${orcamento.id}" />
-                            <button type="submit" onclick="return confirm('Tem certeza que deseja excluir este orçamento?')">
-                                Excluir
-                            </button>
-                        </form>
-                    </td>
-                </tr>
-                <tr th:if="${#lists.isEmpty(orcamentos)}">
-                    <td colspan="7">Nenhum orçamento encontrado.</td>
-                </tr>
-            </tbody>
-        </table>
+    <div layout:fragment="conteudo">
+        <div class="container">
+            <div class="header">
+                <h1>Listagem de Orçamentos</h1>
+                <a th:href="@{/orcamento/formulario}" class="btn-novo">Novo Orçamento</a>
+            </div>
+
+            <div th:if="${mensagem}" class="alert alert-success">
+                <span th:text="${mensagem}"></span>
+                <button type="button" class="close" onclick="this.parentElement.style.display='none'">&times;</button>
+            </div>
+
+            <div th:if="${erro}" class="alert alert-danger">
+                <span th:text="${erro}"></span>
+                <button type="button" class="close" onclick="this.parentElement.style.display='none'">&times;</button>
+            </div>
+
+            <div th:if="${erroVinculado}" class="alert alert-danger">
+                <span th:text="${erroVinculado}"></span>
+                <button type="button" class="close" onclick="this.parentElement.style.display='none'">&times;</button>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Cliente</th>
+                        <th>Tema</th>
+                        <th>Data/Hora Início</th>
+                        <th>Valor Total</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="orcamento : ${orcamentos}">
+                        <td th:text="${orcamento.id}"></td>
+                        <td th:text="${orcamento.cliente?.nome} ?: 'N/A'"></td>
+                        <td th:text="${orcamento.tema?.descricao} ?: 'N/A'"></td>
+                        <td th:text="${orcamento.dtHoraInicio != null} ? ${#temporals.format(orcamento.dtHoraInicio, 'dd/MM/yyyy HH:mm')} : 'N/A'"></td>
+                        <td th:text="${orcamento.valorTotal != null} ? 'R$ ' + ${#numbers.formatDecimal(orcamento.valorTotal, 1, 2, 'POINT')} : 'R$ 0,00'"></td>
+                        <td th:text="${orcamento.status} ?: 'N/A'"></td>
+                        <td>
+                            <div class="btn-acoes">
+                                <a th:href="@{/orcamento/formulario(id=${orcamento.id})}" class="btn-editar">Editar</a>
+                                <form th:action="@{/orcamento}" method="post" style="display:inline;">
+                                    <input type="hidden" name="_method" value="delete">
+                                    <input type="hidden" name="id" th:value="${orcamento.id}">
+                                    <button type="submit" class="btn-excluir" 
+                                            onclick="return confirm('Tem certeza que deseja excluir este orçamento?')">
+                                        Excluir
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(orcamentos)}">
+                        <td colspan="7" class="empty-message">
+                            Nenhum orçamento cadastrado
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <script>
+            setTimeout(() => {
+                document.querySelectorAll('.alert').forEach(alert => {
+                    alert.style.display = 'none';
+                });
+            }, 5000);
+        </script>
     </div>
 </body>
 </html>

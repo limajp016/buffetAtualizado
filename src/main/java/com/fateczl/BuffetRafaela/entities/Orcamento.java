@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fateczl.BuffetRafaela.entities.enums.Estados;
 import com.fateczl.BuffetRafaela.entities.enums.StatusOrcamento;
 import com.fateczl.BuffetRafaela.records.DadosAtualizacaoOrcamento;
 import com.fateczl.BuffetRafaela.records.DadosCadastroOrcamento;
@@ -64,17 +65,24 @@ public class Orcamento {
     @Column(name = "logradouro", nullable = false)
     private String logradouro;
     
+    @Column(name = "numero", nullable = false)
+    private String numero;
+    
     @Column(name = "bairro", nullable = false)
     private String bairro;
     
     @Column(name = "cidade", nullable = false)
     private String cidade;
     
-    @Column(name = "uf", nullable = false, length = 2)
-    private String uf;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "uf", nullable = false)
+    private Estados uf;
     
     @Column(name = "cep", nullable = false, length = 9)
     private String cep;
+    
+    @Column(name = "complemento")
+    private String complemento;
     
     public Orcamento() {
     	
@@ -88,10 +96,12 @@ public class Orcamento {
         this.dtHoraInicio = dados.dtHoraInicio();
         this.status = dados.status();
         this.logradouro = dados.logradouro();
+        this.numero = dados.numero();
         this.bairro = dados.bairro();
         this.cidade = dados.cidade();
         this.uf = dados.uf();
         this.cep = dados.cep();
+        this.complemento = dados.complemento();
         setValorTotal();
     }
 
@@ -112,6 +122,9 @@ public class Orcamento {
         if (dados.logradouro() != null) {
             this.logradouro = dados.logradouro();
         }
+        if (dados.numero() != null) {
+        	this.numero = dados.numero();
+        }
         if (dados.bairro() != null) {
             this.bairro = dados.bairro();
         }
@@ -123,6 +136,9 @@ public class Orcamento {
         }
         if (dados.cep() != null) {
             this.cep = dados.cep();
+        }
+        if (dados.complemento() != null) {
+        	this.complemento = dados.complemento();
         }
         setValorTotal();
     }
@@ -190,6 +206,14 @@ public class Orcamento {
 	public void setLogradouro(String logradouro) {
 		this.logradouro = logradouro;
 	}
+	
+	public String getNumero() {
+	    return numero;
+	}
+
+	public void setNumero(String numero) {
+	    this.numero = numero;
+	}
 
 	public String getBairro() {
 		return bairro;
@@ -207,11 +231,11 @@ public class Orcamento {
 		this.cidade = cidade;
 	}
 
-	public String getUf() {
+	public Estados getUf() {
 		return uf;
 	}
 
-	public void setUf(String uf) {
+	public void setUf(Estados uf) {
 		this.uf = uf;
 	}
 
@@ -221,6 +245,14 @@ public class Orcamento {
 
 	public void setCep(String cep) {
 		this.cep = cep;
+	}
+	
+	public String getComplemento() {
+	    return complemento;
+	}
+
+	public void setComplemento(String complemento) {
+	    this.complemento = complemento;
 	}
 	
 	public void addItem(Item item, Integer quantidade) {

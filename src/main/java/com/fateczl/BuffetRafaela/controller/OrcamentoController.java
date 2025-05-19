@@ -18,6 +18,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.fateczl.BuffetRafaela.entities.Item;
 import com.fateczl.BuffetRafaela.entities.Orcamento;
+import com.fateczl.BuffetRafaela.entities.Pedido;
+import com.fateczl.BuffetRafaela.entities.enums.Estados;
 import com.fateczl.BuffetRafaela.entities.enums.StatusOrcamento;
 import com.fateczl.BuffetRafaela.records.DadosAtualizacaoOrcamento;
 import com.fateczl.BuffetRafaela.records.DadosCadastroOrcamento;
@@ -25,6 +27,7 @@ import com.fateczl.BuffetRafaela.records.ItemQuantidade;
 import com.fateczl.BuffetRafaela.repositories.ClienteRepository;
 import com.fateczl.BuffetRafaela.repositories.ItemRepository;
 import com.fateczl.BuffetRafaela.repositories.OrcamentoRepository;
+import com.fateczl.BuffetRafaela.repositories.PedidoRepository;
 import com.fateczl.BuffetRafaela.repositories.TemaRepository;
 
 import jakarta.transaction.Transactional;
@@ -33,11 +36,11 @@ import jakarta.validation.Valid;
 @Controller
 @RequestMapping("/orcamento")
 public class OrcamentoController {
-	
-	@Autowired
-	private OrcamentoRepository orcamentoRepository;
-	
-	@Autowired
+    
+    @Autowired
+    private OrcamentoRepository orcamentoRepository;
+    
+    @Autowired
     private ClienteRepository clienteRepository;
 
     @Autowired
@@ -45,17 +48,25 @@ public class OrcamentoController {
     
     @Autowired
     private ItemRepository itemRepository;
-
+    
+    @Autowired
+    private PedidoRepository pedidoRepository;
+    
     @GetMapping("/formulario")
-    public String carregaPaginaFormulario(Long id, Model model) {
+    public String carregaPaginaFormulario(@RequestParam(required = false) Long id, Model model) {
         if (id != null) {
             var orcamento = orcamentoRepository.getReferenceById(id);
             model.addAttribute("orcamento", orcamento);
+        } else {
+            model.addAttribute("orcamento", new Orcamento());
         }
+
         model.addAttribute("clientes", clienteRepository.findAll());
         model.addAttribute("temas", temaRepository.findAll());
         model.addAttribute("items", itemRepository.findAll());
         model.addAttribute("statusOrcamentoValues", StatusOrcamento.values());
+        model.addAttribute("estados", Estados.values());
+
         return "orcamento/formulario";
     }
 
@@ -68,20 +79,34 @@ public class OrcamentoController {
     @PostMapping
     @Transactional
     public String cadastrar(@RequestParam Long clienteId,
-                            @RequestParam Long temaId,
-                            @RequestParam(required = false) List<Long> itemIds,
-                            @RequestParam(required = false) List<Integer> quantidades,
-                            @Valid DadosCadastroOrcamento dados,
-                            RedirectAttributes redirectAttributes,
-                            Model model) {
+                          @RequestParam Long temaId,
+                          @RequestParam(required = false) List<Long> itemIds,
+                          @RequestParam(required = false) List<Integer> quantidades,
+                          @RequestParam String uf,
+                          @RequestParam String complemento,
+                          @Valid DadosCadastroOrcamento dados,
+                          RedirectAttributes redirectAttributes,
+                          Model model) {
         try {
-            if (orcamentoRepository.existsByDataAndLocalAndEndereco(
+            Estados estado = Estados.valueOf(uf);
+            
+            if (dados.dtHoraInicio().isBefore(LocalDateTime.now())) {
+                model.addAttribute("error", "A data do evento deve ser futura");
+                return carregarFormularioNovo(model, clienteId, temaId, itemIds, dados);
+            }
+
+            boolean existeConflito = orcamentoRepository.existsByDataAndLocalAndEnderecoAndStatusNot(
                     dados.dtHoraInicio(),
                     dados.logradouro(),
                     dados.bairro(),
+                    dados.numero(),
                     dados.cidade(),
-                    dados.uf(),
-                    dados.cep())) {
+                    estado,
+                    dados.cep(),
+                    dados.complemento(),
+                    StatusOrcamento.REPROVADO);
+
+            if (existeConflito) {
                 model.addAttribute("error", "Já existe um orçamento com mesma data, local e endereço");
                 return carregarFormularioNovo(model, clienteId, temaId, itemIds, dados);
             }
@@ -105,16 +130,18 @@ public class OrcamentoController {
             }
 
             DadosCadastroOrcamento dadosComItens = new DadosCadastroOrcamento(
-                cliente,
-                tema,
-                itensComQuantidade,
-                dados.dtHoraInicio(),
-                dados.status(),
-                dados.logradouro(),
-                dados.bairro(),
-                dados.cidade(),
-                dados.uf(),
-                dados.cep()
+                    cliente,
+                    tema,
+                    itensComQuantidade,
+                    dados.dtHoraInicio(),
+                    StatusOrcamento.PENDENTE,
+                    dados.logradouro(),
+                    dados.bairro(),
+                    dados.numero(),
+                    dados.cidade(),
+                    estado,
+                    dados.cep(),
+                    dados.complemento()
             );
 
             var orcamento = new Orcamento(dadosComItens);
@@ -122,18 +149,15 @@ public class OrcamentoController {
             redirectAttributes.addFlashAttribute("success", "Orçamento cadastrado com sucesso!");
             return "redirect:/orcamento";
 
-        } catch (IllegalStateException e) {
-            model.addAttribute("error", "Erro: " + e.getMessage());
-            return carregarFormularioNovo(model, clienteId, temaId, itemIds, dados);
         } catch (IllegalArgumentException e) {
-            model.addAttribute("error", e.getMessage());
+            model.addAttribute("error", "UF inválida: " + e.getMessage());
             return carregarFormularioNovo(model, clienteId, temaId, itemIds, dados);
         } catch (Exception e) {
             model.addAttribute("error", "Erro ao cadastrar orçamento: " + e.getMessage());
             return carregarFormularioNovo(model, clienteId, temaId, itemIds, dados);
         }
     }
-
+    
     private String carregarFormularioNovo(Model model, Long clienteId, Long temaId, List<Long> itens, DadosCadastroOrcamento dados) {
         model.addAttribute("clientes", clienteRepository.findAll());
         model.addAttribute("temas", temaRepository.findAll());
@@ -143,30 +167,43 @@ public class OrcamentoController {
         model.addAttribute("itens", itens);
         model.addAttribute("dados", dados);
         model.addAttribute("statusOrcamentoValues", StatusOrcamento.values());
+        model.addAttribute("estados", Estados.values());
         return "orcamento/formulario";
     }
     
     @PutMapping
     @Transactional
     public String atualizar(@RequestParam Long id,
-                            @RequestParam Long clienteId,
-                            @RequestParam Long temaId,
-                            @RequestParam(required = false) List<Long> itemIds,
-                            @RequestParam(required = false) List<Integer> quantidades,
-                            @Valid DadosAtualizacaoOrcamento dados,
-                            RedirectAttributes redirectAttributes,
-                            Model model) {
+                          @RequestParam Long clienteId,
+                          @RequestParam Long temaId,
+                          @RequestParam(required = false) List<Long> itemIds,
+                          @RequestParam(required = false) List<Integer> quantidades,
+                          @RequestParam String uf,
+                          @RequestParam String complemento, 
+                          @Valid DadosAtualizacaoOrcamento dados,
+                          RedirectAttributes redirectAttributes,
+                          Model model) {
         try {
+            Estados estado = Estados.valueOf(uf);
+            
             var orcamento = orcamentoRepository.findById(id)
                     .orElseThrow(() -> new IllegalArgumentException("Orçamento não encontrado"));
 
-            boolean existeConflito = orcamentoRepository.existsByDataAndLocalAndEnderecoExcluindoId(
+            if (dados.dtHoraInicio().isBefore(LocalDateTime.now())) {
+                model.addAttribute("error", "A data do evento deve ser futura");
+                return carregarFormularioEdicao(id, model, clienteId, temaId, itemIds, dados);
+            }
+
+            boolean existeConflito = orcamentoRepository.existsByDataAndLocalAndEnderecoAndStatusNotExcluindoId(
                 dados.dtHoraInicio(),
                 dados.logradouro(),
                 dados.bairro(),
+                dados.numero(),
                 dados.cidade(),
-                dados.uf(),
+                estado,
                 dados.cep(),
+                dados.complemento(),
+                StatusOrcamento.REPROVADO,
                 orcamento.getId()
             );
 
@@ -194,29 +231,34 @@ public class OrcamentoController {
             }
 
             DadosAtualizacaoOrcamento dadosAtualizados = new DadosAtualizacaoOrcamento(
-                id,
-                cliente,
-                tema,
-                itensComQuantidade,
-                dados.dtHoraInicio(),
-                dados.status(),
-                dados.logradouro(),
-                dados.bairro(),
-                dados.cidade(),
-                dados.uf(),
-                dados.cep()
+                    id,
+                    cliente,
+                    tema,
+                    itensComQuantidade,
+                    dados.dtHoraInicio(),
+                    dados.status(),
+                    dados.logradouro(),
+                    dados.bairro(),
+                    dados.numero(),
+                    dados.cidade(),
+                    estado,
+                    dados.cep(),
+                    complemento
             );
+            
+            if (dados.status() == StatusOrcamento.APROVADO && 
+                orcamento.getStatus() != StatusOrcamento.APROVADO) {
+                Pedido pedido = new Pedido(orcamento);
+                pedidoRepository.save(pedido);
+            }
 
             orcamento.atualizarInformacoes(dadosAtualizados);
             orcamentoRepository.save(orcamento);
             redirectAttributes.addFlashAttribute("success", "Orçamento atualizado com sucesso!");
             return "redirect:/orcamento";
 
-        } catch (IllegalStateException e) {
-            model.addAttribute("error", "Erro: " + e.getMessage());
-            return carregarFormularioEdicao(id, model, clienteId, temaId, itemIds, dados);
         } catch (IllegalArgumentException e) {
-            model.addAttribute("error", e.getMessage());
+            model.addAttribute("error", "UF inválida: " + e.getMessage());
             return carregarFormularioEdicao(id, model, clienteId, temaId, itemIds, dados);
         } catch (Exception e) {
             model.addAttribute("error", "Erro ao atualizar orçamento: " + e.getMessage());
@@ -237,6 +279,7 @@ public class OrcamentoController {
         model.addAttribute("itens", itens);
         model.addAttribute("dados", dados);
         model.addAttribute("statusOrcamentoValues", StatusOrcamento.values());
+        model.addAttribute("estados", Estados.values());
         return "orcamento/formulario";
     }
     
@@ -246,6 +289,13 @@ public class OrcamentoController {
         try {
             var orcamento = orcamentoRepository.findById(id)
                     .orElseThrow(() -> new IllegalArgumentException("Orçamento não encontrado"));
+            
+            if (orcamento.getStatus() == StatusOrcamento.APROVADO || 
+                orcamento.getStatus() == StatusOrcamento.REPROVADO) {
+                redirectAttributes.addFlashAttribute("error", 
+                    "Não é possível remover um orçamento com status APROVADO ou REPROVADO");
+                return "redirect:/orcamento";
+            }
             
             orcamento.getOrcamentoItens().forEach(orcamentoItem -> {
                 Item item = orcamentoItem.getItem();
@@ -275,18 +325,26 @@ public class OrcamentoController {
                                   @RequestParam LocalDateTime dtHoraInicio,
                                   @RequestParam String status,
                                   @RequestParam String logradouro,
+                                  @RequestParam String numero,
+                                  @RequestParam String complemento,
                                   @RequestParam String bairro,
                                   @RequestParam String cidade,
                                   @RequestParam String uf,
                                   @RequestParam String cep,
                                   RedirectAttributes redirectAttributes) {
         try {
+            Estados estado = Estados.valueOf(uf);
+            StatusOrcamento statusOrcamento = StatusOrcamento.valueOf(status);
+
+            if (dtHoraInicio.isBefore(LocalDateTime.now())) {
+                redirectAttributes.addFlashAttribute("error", "A data do evento deve ser futura");
+                return "redirect:/orcamento/formulario";
+            }
+
             var cliente = clienteRepository.findById(clienteId)
                     .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado"));
             var tema = temaRepository.findById(temaId)
                     .orElseThrow(() -> new IllegalArgumentException("Tema não encontrado"));
-
-            StatusOrcamento statusOrcamento = StatusOrcamento.valueOf(status);
 
             List<ItemQuantidade> itensComQuantidade = new ArrayList<>();
             if (itemIds != null && quantidades != null && itemIds.size() == quantidades.size()) {
@@ -308,21 +366,25 @@ public class OrcamentoController {
                 dtHoraInicio,
                 statusOrcamento,
                 logradouro,
+                numero,
                 bairro,
                 cidade,
-                uf,
-                cep
+                estado,
+                cep,
+                complemento
             );
 
             Orcamento orcamento = new Orcamento(dados);
             orcamentoRepository.save(orcamento);
 
+            if (statusOrcamento == StatusOrcamento.APROVADO) {
+                Pedido pedido = new Pedido(orcamento);
+                pedidoRepository.save(pedido);
+            }
+
             redirectAttributes.addFlashAttribute("success", "Orçamento submetido com sucesso!");
             return "redirect:/orcamento";
 
-        } catch (IllegalStateException e) {
-            redirectAttributes.addFlashAttribute("error", "Erro: " + e.getMessage());
-            return "redirect:/orcamento";
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/orcamento";
@@ -331,5 +393,4 @@ public class OrcamentoController {
             return "redirect:/orcamento";
         }
     }
-    
 }

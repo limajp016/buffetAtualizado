@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.fateczl.BuffetRafaela.entities.Cliente;
 import com.fateczl.BuffetRafaela.entities.Tema;
+import com.fateczl.BuffetRafaela.entities.enums.Estados;
 import com.fateczl.BuffetRafaela.entities.enums.StatusOrcamento;
 
 import jakarta.validation.constraints.NotNull;
@@ -18,7 +19,9 @@ public record DadosAtualizacaoOrcamento(
     StatusOrcamento status,
     String logradouro,
     String bairro,
+    String numero,
     String cidade,
-    String uf,
-    String cep
+    Estados uf,
+    String cep,
+    String complemento
 ) {}

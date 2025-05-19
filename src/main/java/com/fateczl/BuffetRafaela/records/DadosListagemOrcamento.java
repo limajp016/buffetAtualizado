@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import com.fateczl.BuffetRafaela.entities.Cliente;
 import com.fateczl.BuffetRafaela.entities.Orcamento;
 import com.fateczl.BuffetRafaela.entities.Tema;
+import com.fateczl.BuffetRafaela.entities.enums.Estados;
 import com.fateczl.BuffetRafaela.entities.enums.StatusOrcamento;
 
 public record DadosListagemOrcamento(
@@ -18,10 +19,12 @@ public record DadosListagemOrcamento(
     StatusOrcamento status,
     Double valorTotal,
     String logradouro,
+    String numero,
     String bairro,
     String cidade,
-    String uf,
-    String cep
+    Estados uf,
+    String cep,
+    String complemento
 ) {
 
     public DadosListagemOrcamento(Orcamento orcamento) {
@@ -36,10 +39,12 @@ public record DadosListagemOrcamento(
             orcamento.getStatus(),
             orcamento.getValorTotal(),
             orcamento.getLogradouro(),
+            orcamento.getNumero(),
             orcamento.getBairro(),
             orcamento.getCidade(),
             orcamento.getUf(),
-            orcamento.getCep()
+            orcamento.getCep(),
+            orcamento.getComplemento()
         );
     }
 }

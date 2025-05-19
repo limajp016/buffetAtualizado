@@ -1,21 +1,13 @@
 package com.fateczl.BuffetRafaela.controller;
 
-import java.time.LocalDateTime;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
-import com.fateczl.BuffetRafaela.entities.Orcamento;
-import com.fateczl.BuffetRafaela.entities.Pedido;
 import com.fateczl.BuffetRafaela.entities.enums.StatusOrcamento;
 import com.fateczl.BuffetRafaela.repositories.OrcamentoRepository;
 import com.fateczl.BuffetRafaela.repositories.PedidoRepository;
@@ -47,7 +39,8 @@ public class PedidoController {
         model.addAttribute("listaPedidos", pedidoRepository.findAll(Sort.by("id")));
         return "pedido/listagem";
     }
-    
+ 
+    /*
     @PostMapping
     @Transactional
     public String cadastrar(
@@ -61,6 +54,7 @@ public class PedidoController {
         
         return "redirect:/pedido";
     }
+   
     
     @PutMapping
     @Transactional
@@ -75,7 +69,7 @@ public class PedidoController {
         
         return "redirect:/pedido";
     }
-    
+     */
     @DeleteMapping
     @Transactional
     public String removerPedido(Long id) {

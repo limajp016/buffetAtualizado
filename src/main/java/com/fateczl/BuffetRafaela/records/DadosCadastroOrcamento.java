@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.fateczl.BuffetRafaela.entities.Cliente;
 import com.fateczl.BuffetRafaela.entities.Tema;
+import com.fateczl.BuffetRafaela.entities.enums.Estados;
 import com.fateczl.BuffetRafaela.entities.enums.StatusOrcamento;
 
 import jakarta.validation.constraints.NotBlank;
@@ -19,7 +20,9 @@ public record DadosCadastroOrcamento(
     @NotNull StatusOrcamento status,
     @NotBlank String logradouro,
     @NotBlank String bairro,
+    @NotBlank String numero,
     @NotBlank String cidade,
-    @NotBlank String uf,
-    @NotBlank String cep
+    @NotBlank Estados uf,
+    @NotBlank String cep,
+    String complemento
 ) {}
