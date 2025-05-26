@@ -10,6 +10,9 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.EqualsAndHashCode;
 
 @Entity
@@ -25,13 +28,19 @@ public class Cliente {
     @Column(name = "nome")
     private String nome;
 
-    @Column(name = "cpf")
+    @NotBlank(message = "O CPF é obrigatório")
+    @Pattern(regexp = "\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}", message = "CPF deve estar no formato 123.456.789-01")
+    @Column(name = "cpf", unique=true)
     private String cpf;
 
-    @Column(name = "telefone")
+    @NotBlank(message = "O telefone é obrigatório")
+    @Pattern(regexp = "\\(\\d{2}\\)\\s\\d{4,5}-\\d{4}", message = "Telefone deve estar no formato (99) 99999-9999 ou (99) 9999-9999")
+    @Column(name = "telefone", unique=true)
     private String telefone;
 
-    @Column(name = "email")
+    @NotBlank(message = "O email é obrigatório")
+    @Email(message = "O email deve ser válido")
+    @Column(name = "email", unique=true)
     private String email;
 
     public Cliente() {

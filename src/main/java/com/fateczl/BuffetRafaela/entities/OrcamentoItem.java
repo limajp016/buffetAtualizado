@@ -9,6 +9,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -31,12 +33,14 @@ public class OrcamentoItem {
 
 	  @ManyToOne(fetch = FetchType.LAZY)
 	  @JoinColumn(name = "orcamento_id", nullable = false)
+	  @NotNull(message = "Selecione um item")
 	  private Orcamento orcamento;
 
 	  @ManyToOne(fetch = FetchType.LAZY)
 	  @JoinColumn(name = "item_id", nullable = false)
 	  private Item item;
 
+	  @Min(value = 1, message = "Quantidade deve ser maior que zero")
 	  @Column(name = "quantidade", nullable = false)
 	  private Integer quantidade;
 	  

@@ -6,6 +6,7 @@ public record DadosAtualizacaoTema(
 		@NotNull
 		Long id,
 		String descricao,
-		Double preco){
+		Double preco,
+		byte[] imagem){
 
 }

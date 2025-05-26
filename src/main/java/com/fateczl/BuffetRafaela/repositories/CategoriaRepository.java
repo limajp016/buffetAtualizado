@@ -7,5 +7,6 @@ import com.fateczl.BuffetRafaela.entities.Categoria;
 
 @Repository
 public interface CategoriaRepository extends JpaRepository<Categoria, Long>{
+	
 
 }
