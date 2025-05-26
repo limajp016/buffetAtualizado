@@ -1,143 +1,66 @@
 <!DOCTYPE html>
-<html lang="pt" xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{index.html}">
+<html lang="en" xmlns:th="http://thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{index.html}">
+
 <head>
-    <title>Cadastro de Item</title>
-    <link rel="stylesheet" th:href="@{/css/estilo.css}">
-    <style>
-        .box {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .box div {
-            margin-bottom: 15px;
-        }
-        .box label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-        }
-        .box input, .box textarea, .box select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ced4da;
-            border-radius: 4px;
-        }
-        .box button {
-            background-color: #007bff;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .image-preview {
-            max-width: 200px;
-            max-height: 200px;
-            margin-top: 10px;
-        }
-        .alert {
-            padding: 10px;
-            margin-bottom: 15px;
-            border-radius: 5px;
-        }
-        .alert-success {
-            background-color: #d4edda;
-            color: #155724;
-        }
-        .alert-danger {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-    </style>
+<title>Cadastro Item</title>
+<link rel="stylesheet" hrefmehref="../static/css/estilo.css"
+	th:href="@{/css/estilo.css}">
 </head>
+
 <body>
-    <div layout:fragment="conteudo">
-        <div class="box">
-            <h1 style="text-align: center;">
-                <span th:if="${item.id != null}">Editar Item</span>
-                <span th:if="${item.id == null}">Novo Item</span>
-            </h1>
+	<div layout:fragment="conteudo">
+		<div class="box">
+			<h1>Cadastro Item</h1>
 
-            <div th:if="${mensagem}" class="alert alert-success">
-                <span th:text="${mensagem}"></span>
-            </div>
+			<form method="post" action="/item" enctype="multipart/form-data">
+				<input type="hidden" name="_method" value="put"
+					th:if="${item != null}"> <input type="hidden" name="id"
+					th:value="${item?.id}">
 
-            <div th:if="${erro}" class="alert alert-danger">
-                <span th:text="${erro}"></span>
-            </div>
+				<div>
+					<label for="descricao">Descrição:</label> <input type="text"
+						id="descricao" name="descricao" th:value="${item?.descricao}"
+						required>
+				</div>
 
-            <form th:action="@{/item}" th:method="${item.id} != null ? 'put' : 'post'" enctype="multipart/form-data">
-                <input type="hidden" name="id" th:value="${item.id}" />
+				<div>
+					<label for="campo-desc">Campo Descritivo:</label> <input
+						type="text" id="campo-desc" name="campoDesc"
+						th:value="${item?.campoDesc}" required>
+				</div>
 
-                <div>
-                    <label for="descricao">Descrição:</label>
-                    <input type="text" id="descricao" name="descricao" th:value="${item.descricao}" required>
-                </div>
+				<div>
+					<label for="valor-custo">Valor Custo:</label> <input type="number"
+						id="valor-custo" name="valorCusto" step="any"
+						pattern="[0-9]+([\.,][0-9]+)?" th:value="${item?.valorCusto}">
+				</div>
 
-                <div>
-                    <label for="campoDesc">Campo Descritivo:</label>
-                    <input type="text" id="campoDesc" name="campoDesc" th:value="${item.campoDesc}" required>
-                </div>
+				<div>
+					<label for="valor-venda">Valor Venda:</label> <input type="number"
+						id="valor-venda" name="valorVenda" step="any"
+						pattern="[0-9]+([\.,][0-9]+)?" th:value="${item?.valorVenda}">
+				</div>
 
-                <div>
-                    <label for="valorCusto">Valor Custo:</label>
-                    <input type="number" id="valorCusto" name="valorCusto" step="0.01" th:value="${item.valorCusto}" required>
-                </div>
+				<div>
+					<label for="categoria">Categoria:</label> <select id="categoria"
+						name="categoriaId" required>
+						<option th:each="categoria : ${categorias}"
+							th:value="${categoria.id}" th:text="${categoria.descricao}"
+							th:selected="${item?.categoria?.id} == ${categoria.id}">
+						</option>
+					</select>
+				</div>
 
-                <div>
-                    <label for="valorVenda">Valor Venda:</label>
-                    <input type="number" id="valorVenda" name="valorVenda" step="0.01" th:value="${item.valorVenda}" required>
-                </div>
+				<div>
+					<label for="imagem">Imagem do Item:</label> <input type="file"
+						id="imagem" name="imagem" accept="image/*">
+				</div>
 
-                <div>
-                    <label for="categoriaId">Categoria:</label>
-                    <select id="categoriaId" name="categoriaId" required>
-                        <option value="">Selecione uma categoria</option>
-                        <option th:each="categoria : ${categorias}"
-                                th:value="${categoria.id}" 
-                                th:text="${categoria.descricao}"
-                                th:selected="${item.categoria?.id} == ${categoria.id}">
-                        </option>
-                    </select>
-                </div>
-
-                <div>
-                    <label for="imagem">Imagem:</label>
-                    <input type="file" id="imagem" name="imagem" accept="image/*" onchange="previewImage(this)">
-                    <img id="imagePreview" class="image-preview" th:if="${item.imagemBase64 != null}" 
-                         th:src="'data:image/jpeg;base64,' + ${item.imagemBase64}">
-                </div>
-
-                <div style="margin-top: 20px;">
-                    <button type="submit" class="btn-submit"
-                            th:text="${item != null and item.id != null} ? 'Atualizar' : 'Cadastrar'"></button>
-                </div>
-            </form>
-
-            <a th:href="@{/item}" style="display: inline-block; margin-top: 15px;">← Voltar para a listagem</a>
-        </div>
-    </div>
-
-    <script>
-        function previewImage(input) {
-            const preview = document.getElementById('imagePreview');
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    preview.src = e.target.result;
-                    preview.style.display = 'block';
-                }
-                reader.readAsDataURL(input.files[0]);
-            } else if (preview) {
-                preview.style.display = 'none';
-            }
-        }
-    </script>
+				<input type="submit" value="Cadastrar">
+			</form>
+		</div>
+	</div>
 </body>
 </html>

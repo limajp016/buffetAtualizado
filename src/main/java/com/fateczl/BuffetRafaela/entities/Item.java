@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fateczl.BuffetRafaela.records.DadosAtualizacaoItem;
 import com.fateczl.BuffetRafaela.records.DadosCadastroItem;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -16,8 +15,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import jakarta.validation.Valid;
@@ -54,8 +53,8 @@ public class Item {
     private Categoria categoria;
     
     @JsonBackReference
-    @OneToMany(mappedBy = "item", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true)
-    private List<OrcamentoItem> orcamentoItens = new ArrayList<>();
+    @ManyToMany(mappedBy = "itens")
+    private List<Orcamento> orcamentos = new ArrayList<>();
 
     @Transient
     private String imagemBase64;
@@ -63,7 +62,7 @@ public class Item {
     public Item() {
     }
 
-    public Item(Long id, String descricao, Double valorCusto, Double valorVenda, String campoDesc, byte[] imagem, Categoria categoria) {
+    public Item(Long id, String descricao, Double valorCusto, Double valorVenda, String campoDesc, byte[] imagem, Categoria categoria, List<Orcamento> orcamentos) {
         this.id = id;
         this.descricao = descricao;
         this.valorCusto = valorCusto;
@@ -71,6 +70,7 @@ public class Item {
         this.campoDesc = campoDesc;
         this.imagem = imagem;
         this.categoria = categoria;
+        this.orcamentos = orcamentos;
     }
 
     public Item(DadosCadastroItem dados) {
@@ -167,20 +167,13 @@ public class Item {
         this.imagemBase64 = imagemBase64;
     }
 
-    public List<OrcamentoItem> getOrcamentoItens() {
-        return orcamentoItens;
-    }
+	public List<Orcamento> getOrcamentos() {
+		return orcamentos;
+	}
 
-    public void setOrcamentoItens(List<OrcamentoItem> orcamentoItens) {
-        this.orcamentoItens = orcamentoItens;
-    }
-    
-    public List<Orcamento> getOrcamentos() {
-        return orcamentoItens.stream()
-                .map(OrcamentoItem::getOrcamento)
-                .toList();
-    }
-
+	public void setOrcamentos(List<Orcamento> orcamentos) {
+		this.orcamentos = orcamentos;
+	}
     
 }
 

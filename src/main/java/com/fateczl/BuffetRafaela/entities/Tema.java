@@ -8,9 +8,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -33,11 +31,6 @@ public class Tema {
 	private String descricao;
 	@Column(name="preco")
 	private Double preco;
-	@Lob
-    @Column(name = "imagem", columnDefinition = "LONGBLOB")
-    private byte[] imagem;
-    @Transient
-    private String imagemBase64;
 	
 	public Tema() {
 		
@@ -46,7 +39,6 @@ public class Tema {
 	public Tema(DadosCadastroTema dados) {
 		this.descricao = dados.descricao();
 		this.preco = dados.preco();
-		this.imagem = dados.imagem();
 	}
 
 	public void atualizarInformacoes(@Valid DadosAtualizacaoTema dados) {
@@ -55,9 +47,6 @@ public class Tema {
 		}
 		if (dados.preco() != null) {
 			this.preco = dados.preco();
-		}
-		if (dados.imagem() != null) {
-			this.imagem = dados.imagem();
 		}
 	}
 
@@ -83,22 +72,6 @@ public class Tema {
 
 	public void setPreco(Double preco) {
 		this.preco = preco;
-	}
-
-	public byte[] getImagem() {
-		return imagem;
-	}
-
-	public void setImagem(byte[] imagem) {
-		this.imagem = imagem;
-	}
-
-	public String getImagemBase64() {
-		return imagemBase64;
-	}
-
-	public void setImagemBase64(String imagemBase64) {
-		this.imagemBase64 = imagemBase64;
 	}
 	
 }

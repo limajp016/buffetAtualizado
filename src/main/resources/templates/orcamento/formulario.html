@@ -1,775 +1,147 @@
 <!DOCTYPE html>
 <html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Formulário de Orçamento</title>
-<style>
-:root {
-	--primary-color: #4a6baf;
-	--danger-color: #dc3545;
-	--success-color: #28a745;
-	--border-color: #ddd;
-	--text-muted: #6c757d;
-}
-
-body {
-	font-family: Arial, sans-serif;
-	margin: 0;
-	padding: 0;
-	background-color: #f5f5f5;
-}
-
-.container {
-	max-width: 100%;
-	padding: 15px;
-	box-sizing: border-box;
-}
-
-.card {
-	background-color: white;
-	border-radius: 8px;
-	padding: 15px;
-	margin-bottom: 15px;
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.card-title {
-	display: flex;
-	align-items: center;
-	margin-bottom: 15px;
-	color: var(--primary-color);
-}
-
-.card-title i {
-	margin-right: 10px;
-	font-size: 1.2rem;
-}
-
-.form-group {
-	margin-bottom: 15px;
-}
-
-label {
-	display: block;
-	margin-bottom: 5px;
-	font-weight: 500;
-}
-
-select, input {
-	width: 100%;
-	padding: 10px;
-	border: 1px solid var(--border-color);
-	border-radius: 5px;
-	box-sizing: border-box;
-}
-
-.address-row {
-	display: flex;
-	gap: 15px;
-}
-
-.address-row .form-group {
-	flex: 1;
-}
-
-.cep-group {
-	display: flex;
-	gap: 10px;
-}
-
-.cep-group input {
-	flex: 1;
-}
-
-.cep-group button {
-	background-color: var(--primary-color);
-	color: white;
-	border: none;
-	border-radius: 5px;
-	padding: 0 15px;
-	cursor: pointer;
-}
-
-.item-container {
-	display: flex;
-	gap: 10px;
-	margin-bottom: 10px;
-	align-items: center;
-}
-
-.item-container select {
-	flex: 2;
-}
-
-.item-container input {
-	flex: 1;
-}
-
-.btn-remove {
-	background-color: var(--danger-color);
-	color: white;
-	border: none;
-	border-radius: 5px;
-	padding: 10px;
-	cursor: pointer;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-
-.btn-add {
-	background-color: var(--primary-color);
-	color: white;
-	border: none;
-	border-radius: 5px;
-	padding: 10px;
-	width: 100%;
-	cursor: pointer;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	gap: 5px;
-}
-
-.valor-total-container {
-	background-color: #f8f9fa;
-	border-radius: 8px;
-	padding: 15px;
-	margin: 15px 0;
-}
-
-.valor-total {
-	font-size: 1.5rem;
-	font-weight: bold;
-	text-align: center;
-	color: var(--primary-color);
-}
-
-.valor-parcial {
-	display: flex;
-	justify-content: space-between;
-	margin-bottom: 5px;
-	color: var(--text-muted);
-}
-
-.valor-parcial strong {
-	color: var(--primary-color);
-}
-
-.btn-submit {
-	background-color: var(--primary-color);
-	color: white;
-	border: none;
-	border-radius: 5px;
-	padding: 12px;
-	width: 100%;
-	cursor: pointer;
-	font-size: 1rem;
-	margin-top: 10px;
-}
-
-.btn-back {
-	background-color: #6c757d;
-	color: white;
-	border: none;
-	border-radius: 5px;
-	padding: 12px;
-	width: 100%;
-	cursor: pointer;
-	font-size: 1rem;
-	margin-top: 10px;
-	text-align: center;
-	text-decoration: none;
-	display: block;
-}
-
-@media ( min-width : 768px) {
-	.container {
-		max-width: 800px;
-		margin: 0 auto;
-		padding: 20px;
-	}
-	.item-container select {
-		flex: 3;
-	}
-	.button-group {
-		display: flex;
-		gap: 10px;
-	}
-	.button-group .btn-submit, .button-group .btn-back {
-		width: 50%;
-	}
-}
-
-form.readonly input:not(#cep), form.readonly select, form.readonly button:not(#btn-buscar-cep)
-	{
-	background-color: #f5f5f5;
-	cursor: not-allowed;
-}
-</style>
-<link rel="stylesheet"
-	href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <meta charset="UTF-8">
+    <title>Formulário de Orçamento</title>
+    <link rel="stylesheet" href="../static/css/estilo.css" th:href="@{/css/estilo.css}">
 </head>
 <body>
-	<div class="container">
-		<h1
-			style="text-align: center; color: var(--primary-color); margin-bottom: 20px;">
-			<span th:if="${orcamento?.id != null}">Editar Orçamento</span> <span
-				th:if="${orcamento?.id == null}">Novo Orçamento</span>
-		</h1>
+<div>
+    <h1>Formulário de Orçamento</h1>
+    <form method="post" action="/orcamento">
+        <input type="hidden" name="_method" value="put" th:if="${orcamento != null}">
+        <input type="hidden" name="id" th:value="${orcamento?.id}">
 
-		<form th:action="@{/orcamento}" method="post" th:object="${orcamento}"
-			id="orcamentoForm" onsubmit="return validarFormulario(event)"
-			th:classappend="${orcamento?.status?.name() == 'APROVADO' or orcamento?.status?.name() == 'REPROVADO'} ? 'readonly' : ''">
-			<input type="hidden" name="_method"
-				th:if="${orcamento != null and orcamento.id != null}" value="put">
-			<input type="hidden" th:field="*{id}">
+        <div>
+            <label for="cliente">Cliente:</label> 
+            <select id="cliente" name="clienteId" required>
+                <option value="">Selecione um cliente</option>
+                <option th:each="cliente : ${clientes}" 
+                        th:value="${cliente.id}" 
+                        th:text="${cliente.nome}"
+                        th:selected="${orcamento?.cliente?.id == cliente.id}"></option>
+            </select>
+        </div>
 
-			<div class="card">
-				<div class="card-title">
-					<i class="fas fa-user"></i>
-					<h3>Cliente</h3>
-				</div>
+        <div>
+            <label for="tema">Tema:</label> 
+            <select id="tema" name="temaId" required>
+                <option value="">Selecione um tema</option>
+                <option th:each="tema : ${temas}" 
+                        th:value="${tema.id}" 
+                        th:text="${tema.descricao}"
+                        th:selected="${orcamento?.tema?.id == tema.id}"></option>
+            </select>
+        </div>
 
-				<div class="form-group">
-					<label for="cliente">Selecione o Cliente:</label> <select
-						id="cliente" name="clienteId" required
-						th:disabled="${orcamento?.status?.name() == 'APROVADO' or orcamento?.status?.name() == 'REPROVADO'}">
-						<option value="">Selecione um cliente</option>
-						<option th:each="cliente : ${clientes}" th:value="${cliente.id}"
-							th:text="${cliente.nome}"
-							th:selected="${orcamento?.cliente?.id == cliente.id}"></option>
-					</select>
-				</div>
-			</div>
+        <div>
+            <label for="itens">Itens:</label>
+            <div id="item-list">
+                <div class="item-entry" th:if="${orcamento == null || #lists.isEmpty(orcamento.itens)}">
+                    <select name="itens" required>
+                        <option value="">Selecione um item</option>
+                        <option th:each="item : ${items}" 
+                                th:value="${item.id}" 
+                                th:text="${item.descricao}"></option>
+                    </select>
+                    <button type="button" onclick="removeItem(this)">Remover</button>
+                </div>
+                <div th:each="itemOrcamento : ${orcamento?.itens}" class="item-entry">
+                    <select name="itens" required>
+                        <option value="">Selecione um item</option>
+                        <option th:each="item : ${items}" 
+                                th:value="${item.id}" 
+                                th:text="${item.descricao}" 
+                                th:selected="${item.id == itemOrcamento.id}"></option>
+                    </select>
+                    <button type="button" onclick="removeItem(this)">Remover</button>
+                </div>
+            </div>
+            <button type="button" onclick="addItem()">Adicionar Item</button>
+        </div>
 
-			<div class="card">
-				<div class="card-title">
-					<i class="fas fa-palette"></i>
-					<h3>Tema</h3>
-				</div>
-
-				<div class="form-group">
-					<label for="tema">Selecione o Tema:</label> <select id="tema"
-						name="temaId" required onchange="atualizarValorTotal()"
-						th:disabled="${orcamento?.status?.name() == 'APROVADO' or orcamento?.status?.name() == 'REPROVADO'}">
-						<option value="">Selecione um tema</option>
-						<option th:each="tema : ${temas}" th:value="${tema.id}"
-							th:text="${tema.descricao}" th:attr="data-preco=${tema.preco}"
-							th:selected="${orcamento?.tema?.id == tema.id}"></option>
-					</select>
-				</div>
-			</div>
-
-			<div class="card">
-				<div class="card-title">
-					<i class="fas fa-box-open"></i>
-					<h3>Itens</h3>
-				</div>
-
-				<div id="item-list">
-					<div class="item-container" style="display: none;"
-						id="item-template">
-						<input type="hidden" name="orcamentoItens[].id" value="">
-						<select name="orcamentoItens[].item.id" required
-							onchange="atualizarValorItem(this)"
-							th:disabled="${orcamento?.status?.name() == 'APROVADO' or orcamento?.status?.name() == 'REPROVADO'}">
-							<option value="">Selecione um item</option>
-							<option th:each="item : ${items}" th:value="${item.id}"
-								th:text="${item.descricao}"
-								th:attr="data-preco=${item.valorVenda}"></option>
-						</select> <input type="number" name="orcamentoItens[].quantidade" min="1"
-							value="1" required onchange="atualizarValorTotal()"
-							th:disabled="${orcamento?.status?.name() == 'APROVADO' or orcamento?.status?.name() == 'REPROVADO'}">
-						<button type="button" class="btn-remove"
-							onclick="removeItem(this)" title="Remover item"
-							th:disabled="${orcamento?.status?.name() == 'APROVADO' or orcamento?.status?.name() == 'REPROVADO'}">
-							<i class="fas fa-trash"></i>
-						</button>
-					</div>
-
-					<div th:each="itemOrcamento, stat : ${orcamento?.orcamentoItens}"
-						class="item-container">
-						<input type="hidden" th:name="|orcamentoItens[${stat.index}].id|"
-							th:value="${itemOrcamento.id}"> <input type="hidden"
-							th:name="|orcamentoItens[${stat.index}].item.id|"
-							th:value="${itemOrcamento.item.id}"> <select
-							th:name="|orcamentoItens[${stat.index}].item.id|" required
-							onchange="atualizarValorItem(this)"
-							th:disabled="${orcamento?.status?.name() == 'APROVADO' or orcamento?.status?.name() == 'REPROVADO'}">
-							<option value="">Selecione um item</option>
-							<option th:each="item : ${items}" th:value="${item.id}"
-								th:text="${item.descricao}"
-								th:attr="data-preco=${item.valorVenda}"
-								th:selected="${item.id == itemOrcamento.item.id}"></option>
-						</select> <input type="number"
-							th:name="|orcamentoItens[${stat.index}].quantidade|" min="1"
-							th:value="${itemOrcamento.quantidade}" required
-							onchange="atualizarValorTotal()"
-							th:disabled="${orcamento?.status?.name() == 'APROVADO' or orcamento?.status?.name() == 'REPROVADO'}">
-						<button type="button" class="btn-remove"
-							onclick="removeItem(this)" title="Remover item"
-							th:disabled="${orcamento?.status?.name() == 'APROVADO' or orcamento?.status?.name() == 'REPROVADO'}">
-							<i class="fas fa-trash"></i>
-						</button>
-					</div>
-
-					<div
-						th:if="${orcamento == null or #lists.isEmpty(orcamento.orcamentoItens)}"
-						class="item-container">
-						<input type="hidden" name="orcamentoItens[0].id" value="">
-						<select name="orcamentoItens[0].item.id" required
-							onchange="atualizarValorItem(this)"
-							th:disabled="${orcamento?.status?.name() == 'APROVADO' or orcamento?.status?.name() == 'REPROVADO'}">
-							<option value="">Selecione um item</option>
-							<option th:each="item : ${items}" th:value="${item.id}"
-								th:text="${item.descricao}"
-								th:attr="data-preco=${item.valorVenda}"></option>
-						</select> <input type="number" name="orcamentoItens[0].quantidade" min="1"
-							value="1" required onchange="atualizarValorTotal()"
-							th:disabled="${orcamento?.status?.name() == 'APROVADO' or orcamento?.status?.name() == 'REPROVADO'}">
-						<button type="button" class="btn-remove"
-							onclick="removeItem(this)" title="Remover item"
-							th:disabled="${orcamento?.status?.name() == 'APROVADO' or orcamento?.status?.name() == 'REPROVADO'}">
-							<i class="fas fa-trash"></i>
-						</button>
-					</div>
-				</div>
-
-				<button type="button" class="btn-add" onclick="addItem()"
-					th:disabled="${orcamento?.status?.name() == 'APROVADO' or orcamento?.status?.name() == 'REPROVADO'}">
-					<i class="fas fa-plus"></i> Adicionar Item
-				</button>
-			</div>
-
-			<div class="valor-total-container">
-				<h3
-					style="text-align: center; color: var(--primary-color); margin-top: 0;">
-					Resumo do Valor</h3>
-
-				<div id="resumo-itens"></div>
-
-				<div class="valor-parcial">
-					<span>Subtotal dos Itens:</span> <strong id="subtotal-itens">R$
-						0,00</strong>
-				</div>
-
-				<div class="valor-parcial">
-					<span>Valor do Tema:</span> <strong id="valor-tema">R$
-						0,00</strong>
-				</div>
-
-				<div class="valor-total">
-					<span>Valor Total:</span> <span id="valor-total">R$ 0,00</span>
-				</div>
-			</div>
-
-			<div class="card">
-				<div class="card-title">
-					<i class="far fa-calendar-alt"></i>
-					<h3>Data e Status</h3>
-				</div>
-
-				<div class="form-group">
-					<label for="dtHoraInicio">Data e Hora de Início:</label> <input
-						type="datetime-local" id="dtHoraInicio" name="dtHoraInicio"
-						th:if="${orcamento?.dtHoraInicio != null}"
-						th:value="${#temporals.format(orcamento.dtHoraInicio, 'yyyy-MM-dd')} + 'T' + ${#temporals.format(orcamento.dtHoraInicio, 'HH:mm')}"
-						required
-						th:disabled="${orcamento?.status?.name() == 'APROVADO' or orcamento?.status?.name() == 'REPROVADO'}">
-					<input type="datetime-local" id="dtHoraInicio" name="dtHoraInicio"
-						th:unless="${orcamento?.dtHoraInicio != null}" required
-						th:disabled="${orcamento?.status?.name() == 'APROVADO' or orcamento?.status?.name() == 'REPROVADO'}">
-				</div>
-
-				<div class="form-group" th:if="${orcamento?.id != null}">
-					<label for="status">Status:</label> <select id="status"
-						th:field="*{status}" required>
-						<option value="">Selecione um status</option>
-						<option th:each="status : ${statusOrcamentoValues}"
-							th:value="${status}" th:text="${status}"
-							th:selected="${orcamento?.status == status}"></option>
-					</select>
-				</div>
-				<input type="hidden" th:field="*{status}"
-					th:if="${orcamento?.id == null}" th:value="PENDENTE">
-			</div>
-
-			<div class="card">
-				<div class="card-title">
-					<i class="fas fa-map-marker-alt"></i>
-					<h3>Endereço</h3>
-				</div>
-
-				<div class="form-group">
-					<label for="cep">CEP:</label>
-					<div class="cep-group">
-						<input type="text" id="cep" th:field="*{cep}"
-							pattern="\d{5}-?\d{3}" placeholder="00000-000" required
-							th:disabled="${orcamento?.status?.name() == 'APROVADO' or orcamento?.status?.name() == 'REPROVADO'}">
-						<button type="button" id="btn-buscar-cep"
-							th:disabled="${orcamento?.status?.name() == 'APROVADO' or orcamento?.status?.name() == 'REPROVADO'}">
-							<i class="fas fa-search"></i> Buscar
-						</button>
-					</div>
-				</div>
-
-				<div class="address-row">
-					<div class="form-group">
-						<label for="logradouro">Logradouro:</label> <input type="text"
-							id="logradouro" th:field="*{logradouro}" required
-							th:disabled="${orcamento?.status?.name() == 'APROVADO' or orcamento?.status?.name() == 'REPROVADO'}">
-					</div>
-
-					<div class="form-group">
-						<label for="numero">Número:</label> <input type="text" id="numero"
-							th:field="*{numero}" required
-							th:disabled="${orcamento?.status?.name() == 'APROVADO' or orcamento?.status?.name() == 'REPROVADO'}">
-					</div>
-				</div>
-
-				<div class="form-group">
-					<label for="bairro">Bairro:</label> <input type="text" id="bairro"
-						th:field="*{bairro}" required
-						th:disabled="${orcamento?.status?.name() == 'APROVADO' or orcamento?.status?.name() == 'REPROVADO'}">
-				</div>
-
-				<div class="address-row">
-					<div class="form-group">
-						<label for="cidade">Cidade:</label> <input type="text" id="cidade"
-							th:field="*{cidade}" required
-							th:disabled="${orcamento?.status?.name() == 'APROVADO' or orcamento?.status?.name() == 'REPROVADO'}">
-					</div>
-
-					<div class="form-group">
-						<label for="uf">Estado (UF):</label> <select id="uf" name="uf"
-							th:field="*{uf}" required
-							th:disabled="${orcamento?.status?.name() == 'APROVADO' or orcamento?.status?.name() == 'REPROVADO'}">
-							<option value="">Selecione o Estado</option>
-							<option
-								th:each="uf : ${T(com.fateczl.BuffetRafaela.entities.enums.Estados).values()}"
-								th:value="${uf}" th:text="${uf}"
-								th:selected="${orcamento?.uf == uf}"></option>
-						</select>
-					</div>
-				</div>
-
-				<div class="form-group">
-					<label for="complemento">Complemento:</label> <input type="text"
-						id="complemento" th:field="*{complemento}"
-						th:disabled="${orcamento?.status?.name() == 'APROVADO' or orcamento?.status?.name() == 'REPROVADO'}">
-				</div>
-			</div>
-
-			<div class="button-group"
-				th:unless="${orcamento?.status?.name() == 'APROVADO' or orcamento?.status?.name() == 'REPROVADO'}">
-				<button type="submit" class="btn-submit">
-					<i class="fas fa-save"></i> Salvar Orçamento
-				</button>
-				<a th:href="@{/orcamento}" class="btn-back"> <i
-					class="fas fa-arrow-left"></i> Voltar para Listagem
-				</a>
-			</div>
-
-			<div class="button-group"
-				th:if="${orcamento?.status?.name() == 'APROVADO' or orcamento?.status?.name() == 'REPROVADO'}">
-				<a th:href="@{/orcamento}" class="btn-back" style="width: 100%">
-					<i class="fas fa-arrow-left"></i> Voltar para Listagem
-				</a>
-			</div>
-		</form>
-	</div>
-
-	<script>
-        function formatarMoeda(valor) {
-            return valor.toLocaleString('pt-BR', {
-                style: 'currency',
-                currency: 'BRL'
-            });
-        }
-
-        function atualizarValorItem(selectElement) {
-            const itemContainer = selectElement.closest('.item-container');
-            const preco = parseFloat(selectElement.options[selectElement.selectedIndex]?.dataset.preco || 0);
-            const quantidade = parseFloat(itemContainer.querySelector('input[type="number"]').value || 0);
-            const valorItem = preco * quantidade;
-            
-            atualizarValorTotal();
-        }
-
-        function atualizarValorTotal() {
-            let subtotalItens = 0;
-            const resumoItens = document.getElementById('resumo-itens');
-            resumoItens.innerHTML = '';
-
-            document.querySelectorAll('.item-container').forEach(container => {
-                const select = container.querySelector('select');
-                const quantidadeInput = container.querySelector('input[type="number"]');
-                const preco = parseFloat(select.options[select.selectedIndex]?.dataset.preco || 0);
-                const quantidade = parseFloat(quantidadeInput.value) || 0;
-                const valorItem = preco * quantidade;
-                
-                subtotalItens += valorItem;
-                
-                if (select.value) {
-                    const itemDesc = select.options[select.selectedIndex].text.split(' (R$')[0];
-                    const itemElement = document.createElement('div');
-                    itemElement.className = 'valor-parcial';
-                    itemElement.innerHTML = `
-                        <span>${itemDesc} (${quantidade}x):</span>
-                        <strong>${formatarMoeda(valorItem)}</strong>
-                    `;
-                    resumoItens.appendChild(itemElement);
-                }
-            });
-            
-            const temaSelect = document.getElementById('tema');
-            const valorTema = parseFloat(temaSelect.options[temaSelect.selectedIndex]?.dataset.preco || 0);
-            
-            document.getElementById('subtotal-itens').textContent = formatarMoeda(subtotalItens);
-            document.getElementById('valor-tema').textContent = formatarMoeda(valorTema);
-            document.getElementById('valor-total').textContent = formatarMoeda(subtotalItens + valorTema);
-        }
-
-        function itemJaExiste(itemId) {
-            const selects = document.querySelectorAll('#item-list select[name$=".item.id"]');
-            for (let select of selects) {
-                if (select.value === itemId) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        function addItem() {
-            const itemList = document.getElementById('item-list');
-            const template = document.getElementById('item-template');
-            const newItem = template.cloneNode(true);
-          
-            newItem.removeAttribute('id');
-            newItem.style.display = 'flex';
-
-            const index = itemList.querySelectorAll('.item-container:not(#item-template)').length;
-
-            newItem.querySelector('input[type="hidden"]').name = `orcamentoItens[${index}].id`;
-            newItem.querySelector('select').name = `orcamentoItens[${index}].item.id`;
-            newItem.querySelector('input[type="number"]').name = `orcamentoItens[${index}].quantidade`;
-
-            newItem.querySelector('select').addEventListener('change', function() {
-                if (this.value && itemJaExiste(this.value)) {
-                    alert('Este item já foi adicionado ao orçamento.');
-                    this.selectedIndex = 0;
-                    atualizarValorItem(this);
-                } else {
-                    atualizarValorItem(this);
-                }
-            });
-            
-            newItem.querySelector('input[type="number"]').addEventListener('change', atualizarValorTotal);
-            
-            itemList.appendChild(newItem);
-            updateRemoveButtons();
-            atualizarValorTotal();
-        }
-
-        function removeItem(button) {
-            const itemList = document.getElementById('item-list');
-            const items = itemList.querySelectorAll('.item-container:not(#item-template)');
-            
-            if (items.length > 1) {
-                button.closest('.item-container').remove();
-                
-                document.querySelectorAll('.item-container:not(#item-template)').forEach((container, index) => {
-                    container.querySelector('input[type="hidden"]').name = `orcamentoItens[${index}].id`;
-                    container.querySelector('select').name = `orcamentoItens[${index}].item.id`;
-                    container.querySelector('input[type="number"]').name = `orcamentoItens[${index}].quantidade`;
-                });
-                
-                atualizarValorTotal();
-            } else {
-                alert('Você precisa ter pelo menos um item no orçamento.');
-            }
-        }
+        <div>
+            <label for="dtHoraInicio">Data e Hora de Início:</label>
+            <input type="datetime-local" id="dtHoraInicio" name="dtHoraInicio" 
+                   th:value="${orcamento?.dtHoraInicio != null ? orcamento.dtHoraInicio.toString().substring(0, 16) : ''}" required>
+        </div>
         
-        function updateRemoveButtons() {
-            const itemList = document.getElementById('item-list');
-            const items = itemList.querySelectorAll('.item-container');
-            
-            items.forEach((item, index) => {
-                const btn = item.querySelector('.btn-remove');
-                btn.style.display = items.length > 1 ? 'flex' : 'none';
-            });
-        }
-        
-        function validarData() {
-            const dataInput = document.getElementById('dtHoraInicio');
-            
-            if (!dataInput.value) {
-                alert('Por favor, selecione uma data e hora de início.');
-                return false;
-            }
-            
-            const dataSelecionada = new Date(dataInput.value);
-            const dataAtual = new Date();
-            
-            if (dataSelecionada < dataAtual) {
-                alert('A data de início não pode ser anterior à data atual.');
-                dataInput.focus();
-                return false;
-            }
- 
-            console.log('Validação de data concluída, verificando endereço...');
-            
-            return validarDataEndereco();
-        }
-        
-        async function validarDataEndereco() {
-            const dataInput = document.getElementById('dtHoraInicio').value;
-            const cepInput = document.getElementById('cep').value.replace(/\D/g, '');
-            const numeroInput = document.getElementById('numero').value;
-            const orcamentoId = document.querySelector('input[name="id"]')?.value || '0';
-            
-            if (!dataInput || !cepInput || !numeroInput) {
-                console.log('Campos de endereço não preenchidos, permitindo submit');
-                return true;
-            }
-            
-            try {
-                const response = await fetch(`/orcamento/verificar-duplicado?data=${encodeURIComponent(dataInput)}&cep=${encodeURIComponent(cepInput)}&numero=${encodeURIComponent(numeroInput)}&id=${encodeURIComponent(orcamentoId)}`);
+        <div>
+            <label for="status">Status:</label>
+            <select id="status" name="status" required>
+                <!-- Solução 1: Se os status estão disponíveis no model -->
+                <option th:each="status : ${statusOrcamentoValues}" 
+                        th:value="${status}" 
+                        th:text="${status}"
+                        th:selected="${orcamento?.status == status}"></option>
                 
-                if (!response.ok) {
-                    throw new Error(`Erro HTTP! status: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                console.log('Resposta da verificação:', data);
-                
-                if (data.duplicado) {
-                    alert('Já existe um orçamento agendado para mesma data, horário, CEP e número. Verifique os dados.');
-                    return false;
-                }
-                
-                return true;
-            } catch (error) {
-                console.error('Erro na validação:', error);
-                alert('Erro ao verificar disponibilidade. Tente novamente.');
-                return false;
-            }
-        }
+                <!-- Solução 2: Alternativa se a solução 1 não funcionar
+                <option value="PENDENTE" th:selected="${orcamento?.status == 'PENDENTE'}">PENDENTE</option>
+                <option value="APROVADO" th:selected="${orcamento?.status == 'APROVADO'}">APROVADO</option>
+                <option value="CANCELADO" th:selected="${orcamento?.status == 'REPROVADO'}">REPROVADO</option>
+                 -->
+            </select>
+        </div>
         
-        function buscarCEP() {
-            const cep = document.getElementById('cep').value.replace(/\D/g, '');
-            
-            if (cep.length !== 8) {
-                alert('CEP inválido. Digite 8 números.');
-                return;
-            }
-            
-            fetch(`https://viacep.com.br/ws/${cep}/json/`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.erro) {
-                        alert('CEP não encontrado.');
-                        return;
-                    }
-                    
-                    document.getElementById('logradouro').value = data.logradouro || '';
-                    document.getElementById('bairro').value = data.bairro || '';
-                    document.getElementById('cidade').value = data.localidade || '';
-                    document.getElementById('uf').value = data.uf || '';
-                    document.getElementById('complemento').focus();
-                })
-                .catch(error => {
-                    console.error('Erro ao buscar CEP:', error);
-                    alert('Erro ao buscar CEP. Tente novamente.');
-                });
-        }
+        <div>
+            <label for="logradouro">Logradouro:</label>
+            <input type="text" id="logradouro" name="logradouro" 
+                   th:value="${orcamento?.logradouro}" required>
+        </div>
         
-        function formatarCEP(cep) {
-            cep = cep.replace(/\D/g, '');
-            if (cep.length > 5) {
-                cep = cep.substring(0, 5) + '-' + cep.substring(5, 8);
-            }
-            return cep;
-        }
+        <div>
+            <label for="bairro">Bairro:</label>
+            <input type="text" id="bairro" name="bairro" 
+                   th:value="${orcamento?.bairro}" required>
+        </div>
         
-        document.addEventListener('DOMContentLoaded', function() {
-            updateRemoveButtons();
-           
-            document.querySelectorAll('#item-list select').forEach(select => {
-                select.addEventListener('change', function() {
-                    atualizarValorItem(this);
-                });
-            });
-            
-            document.querySelectorAll('#item-list input[type="number"]').forEach(input => {
-                input.addEventListener('change', atualizarValorTotal);
-            });
-            
-            document.getElementById('tema').addEventListener('change', atualizarValorTotal);
-            
-            document.getElementById('btn-buscar-cep').addEventListener('click', buscarCEP);
-            
-            document.getElementById('cep').addEventListener('input', function(e) {
-                this.value = formatarCEP(this.value);
-            });
-            
-            const ufSelect = document.getElementById('uf');
-            const orcamentoUf = ufSelect.getAttribute('th:value') || '';
-            if (orcamentoUf) {
-                ufSelect.value = orcamentoUf;
-            }
-            
-            const status = document.getElementById('status')?.value;
-            if (status === 'APROVADO' || status === 'REPROVADO') {
-                document.querySelector('.btn-add').style.display = 'none';
-                document.querySelectorAll('.btn-remove').forEach(btn => {
-                    btn.style.display = 'none';
-                });
-            }
-            
-            atualizarValorTotal();
-        });
+        <div>
+            <label for="cidade">Cidade:</label>
+            <input type="text" id="cidade" name="cidade" 
+                   th:value="${orcamento?.cidade}" required>
+        </div>
         
-        async function validarFormulario(event) {
-            console.log('Iniciando validação do formulário...');
+        <div>
+            <label for="uf">UF:</label>
+            <input type="text" id="uf" name="uf" 
+                   th:value="${orcamento?.uf}" maxlength="2" required>
+        </div>
+        
+        <div>
+            <label for="cep">CEP:</label>
+            <input type="text" id="cep" name="cep" 
+                   th:value="${orcamento?.cep}" required>
+        </div>
+        
+        <div th:if="${orcamento?.valorTotal != null}">
+            <label>Valor Total:</label>
+            <span th:text="${#numbers.formatDecimal(orcamento.valorTotal, 1, 2, 'POINT')}"></span>
+        </div>
+        
+        <input type="submit" th:value="${orcamento != null ? 'Atualizar' : 'Cadastrar'}">
+    </form>
+</div>
 
-            if (!document.getElementById('cliente').value) {
-                alert('Por favor, selecione um cliente.');
-                return false;
-            }
+<script>
+    function addItem() {
+        let itemList = document.getElementById('item-list');
+        let itemEntry = document.querySelector('.item-entry');
+        let newItemEntry = itemEntry.cloneNode(true);
+        let select = newItemEntry.querySelector('select');
+        select.selectedIndex = 0; 
+        itemList.appendChild(newItemEntry);
+    }
 
-            if (!document.getElementById('tema').value) {
-                alert('Por favor, selecione um tema.');
-                return false;
-            }
-
-            let itensValidos = false;
-            document.querySelectorAll('#item-list select').forEach(select => {
-                if (select.value) itensValidos = true;
-            });
-            
-            if (!itensValidos) {
-                alert('Por favor, adicione pelo menos um item ao orçamento.');
-                return false;
-            }
-
-            try {
-                const valido = await validarDataEndereco();
-                if (!valido) {
-                    console.log('Formulário inválido (data/endereço duplicado)');
-                    return false;
-                }
-            } catch (error) {
-                console.error('Erro na validação:', error);
-                alert('Erro ao validar dados. Tente novamente.');
-                return false;
-            }
-
-            console.log('Formulário válido, submetendo...');
-            return true;
+    function removeItem(button) {
+        let itemEntry = button.parentElement;
+        let itemList = document.getElementById('item-list');
+        if (itemList.children.length > 1) {
+            itemList.removeChild(itemEntry);
+        } else {
+            alert('A lista deve conter pelo menos um item.');
         }
-    </script>
+    }
+</script>
 </body>
+</html>
 </html>

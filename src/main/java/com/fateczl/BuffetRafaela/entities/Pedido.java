@@ -2,9 +2,7 @@ package com.fateczl.BuffetRafaela.entities;
 
 import java.time.LocalDateTime;
 
-import com.fateczl.BuffetRafaela.entities.enums.StatusOrcamento;
-import com.fateczl.BuffetRafaela.records.DadosListagemPedido;
-
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -13,7 +11,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,62 +23,94 @@ import lombok.Setter;
 @NoArgsConstructor
 @EqualsAndHashCode(of = "id")
 public class Pedido {
-    
-    @Id
+	
+	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "pedido_id")
     private Long id;
-    
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "orcamento_id", nullable = false, unique = true)
-    private Orcamento orcamento;
-    
-    public Long getId() {
-        return this.id;
-    }
-    
-    @Transient
-    public LocalDateTime getDataEvento() {
-        return orcamento != null ? orcamento.getDtHoraInicio() : null;
-    }
-    
-    @Transient
-    public Double getValorTotal() {
-        return orcamento != null ? orcamento.getValorTotal() : null;
-    }
-    
-    @Transient
-    public Long getOrcamentoId() {
-        return orcamento != null ? orcamento.getId() : null;
-    }
-
-    public Pedido(Orcamento orcamento) {
-        if (orcamento == null) {
-            throw new IllegalArgumentException("Orçamento não pode ser nulo");
-        }
-        if (!orcamento.getStatus().equals(StatusOrcamento.APROVADO)) {
-            throw new IllegalStateException("Só é possível criar pedido para orçamento aprovado");
-        }
-        
+	
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "orcamento_id", nullable = false)
+	private Orcamento orcamento;
+	
+    @Column(name = "valor_total", nullable = false)
+    private Double valorTotal;
+	
+	@Column(name = "dt_hr_inicio", nullable = false)
+    private LocalDateTime dtHoraInicio;
+	
+	public Pedido() {
+		
+	}
+	
+/*	public Pedido(DadosCadastroPedido dados) {
+		this.orcamento = dados.orcamento();
+		this.valorTotal = dados.valorTotal();
+		this.dtHoraInicio = dados.dtHoraInicio();
+	}
+	*/
+	
+	public Pedido(Orcamento orcamento, Double valorTotal, LocalDateTime dtHoraInicio) {
         this.orcamento = orcamento;
+        this.valorTotal = valorTotal;
+        this.dtHoraInicio = dtHoraInicio;
     }
-    
-/*
-    public DadosListagemPedido toDadosListagem() {
-        return new DadosListagemPedido(this);
-    }
-*/    
-    protected void setOrcamento(Orcamento orcamento) {
-        if (this.orcamento != null) {
-            throw new IllegalStateException("Não é possível alterar o orçamento associado a um pedido");
+
+	/*
+	public void atualizarInformacoes(@Valid DadosAtualizacaoPedido dados) {
+		if(dados.orcamento() != null) {
+			this.orcamento = dados.orcamento();
+		}
+		
+		if(dados.valorTotal() != null) {
+			this.valorTotal = dados.valorTotal();
+		}
+		
+		if (dados.dtHoraInicio() != null) {
+			this.dtHoraInicio = dados.dtHoraInicio();
+		}
+	}
+	*/
+	
+	public void atualizarInformacoes(Double valorTotal, LocalDateTime dtHoraInicio) {
+        if (valorTotal != null) {
+            this.valorTotal = valorTotal;
         }
-        this.orcamento = orcamento;
+        if (dtHoraInicio != null) {
+            this.dtHoraInicio = dtHoraInicio;
+        }
     }
 
-    public void setValorTotal(Double valorTotal) {
-        throw new UnsupportedOperationException("Valor total é derivado do orçamento e não pode ser alterado diretamente");
-    }
+	public Long getId() {
+		return id;
+	}
 
-    public void setDataEvento(LocalDateTime dataEvento) {
-        throw new UnsupportedOperationException("Data do evento é derivada do orçamento e não pode ser alterada diretamente");
-    }
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public Orcamento getOrcamento() {
+		return orcamento;
+	}
+
+	public void setOrcamento(Orcamento orcamento) {
+		this.orcamento = orcamento;
+	}
+
+	public Double getValorTotal() {
+		return valorTotal;
+	}
+
+	public void setValorTotal(Double valorTotal) {
+		this.valorTotal = valorTotal;
+	}
+
+	public LocalDateTime getDtHoraInicio() {
+		return dtHoraInicio;
+	}
+
+	public void setDtHoraInicio(LocalDateTime dtHoraInicio) {
+		this.dtHoraInicio = dtHoraInicio;
+	}
+
 }

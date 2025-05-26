@@ -8,6 +8,4 @@ import com.fateczl.BuffetRafaela.entities.Item;
 @Repository
 public interface ItemRepository extends JpaRepository<Item, Long>{
 	
-    boolean existsByCategoriaId(Long categoriaId); 
-	
 }
