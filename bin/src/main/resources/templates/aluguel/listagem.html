@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{index.html}">
+<head>
+<title>Lista de Aluguéis</title>
+<link rel="stylesheet" href="../static/css/lista.css"
+	th:href="@{/css/lista.css}">
+</head>
+<body>
+	<div layout:fragment="conteudo">
+		<h1>Lista de Aluguéis</h1>
+		<a href="/aluguel/formulario">Novo</a>
+		<table>
+			<thead>
+				<tr>
+					<th>Cliente</th>
+					<th>Tema</th>
+					<th>Data Início</th>
+					<th>Data Fim</th>
+					<th>Valor Total</th>
+					<th>Ações</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="aluguel : ${alugueis}">
+					<td
+						th:text="${aluguel.cliente != null ? aluguel.cliente.nome : ''}"></td>
+					<td th:text="${aluguel.tema != null ? aluguel.tema.descricao : ''}"></td>
+					<td
+						th:text="${#temporals.format(aluguel.dtHoraInicio, 'dd/MM/yyyy HH:mm')}"></td>
+					<td
+						th:text="${#temporals.format(aluguel.dtHoraFim, 'dd/MM/yyyy HH:mm')}"></td>
+					<td th:text="${aluguel.valorTotal}"></td>
+					<td><a
+						th:href="@{/aluguel/formulario?id={id}(id=${aluguel.id})}"><button>Editar</button></a>
+						<form th:action="@{/aluguel}" method="post"
+							style="display: inline;">
+							<input type="hidden" name="_method" value="delete"> <input
+								type="hidden" name="id" th:value="${aluguel.id}"> <input
+								type="submit" value="Excluir">
+						</form></td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</body>
+</html>
+

@@ -2,25 +2,29 @@ package com.fateczl.BuffetRafaela.controller;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fateczl.BuffetRafaela.entities.Cliente;
 import com.fateczl.BuffetRafaela.entities.Item;
 import com.fateczl.BuffetRafaela.entities.Orcamento;
@@ -89,10 +93,14 @@ public class OrcamentoController {
 	                       BindingResult result,
 	                       RedirectAttributes redirectAttributes, 
 	                       Model model) {
-	    
+
 	    if (result.hasErrors()) {
 	        carregarDadosBaseModel(model);
 	        return "orcamento/formulario";
+	    }
+	    
+	    if (orcamento.getOrcamentoItens() == null) {
+	        orcamento.setOrcamentoItens(new ArrayList<>());
 	    }
 	    
 	    try {
@@ -109,27 +117,26 @@ public class OrcamentoController {
 	        } else if (orcamento.getDtHoraInicio().isBefore(LocalDateTime.now())) {
 	            result.rejectValue("dtHoraInicio", "Future", "A data do evento deve ser futura");
 	        }
-	     
+
 	        if (orcamento.getOrcamentoItens() == null || orcamento.getOrcamentoItens().isEmpty()) {
 	            result.rejectValue("orcamentoItens", "NotEmpty", "Adicione pelo menos um item");
 	        } else {
-	        	for (int i = 0; i < orcamento.getOrcamentoItens().size(); i++) {
-	        	    OrcamentoItem item = orcamento.getOrcamentoItens().get(i);
-	        	    if (item.getItem() == null || item.getItem().getId() == null) {
-	        	        result.rejectValue("orcamentoItens["+i+"].item", "NotNull", "Selecione um item válido");
-	        	    }
-	        	   
-	        	    if (item.getQuantidade() == null || item.getQuantidade() < 1) {
-	        	        result.rejectValue("orcamentoItens["+i+"].quantidade", "Min", "Quantidade deve ser maior que 0");
-	        	    }
-
-	        	    if (item.getItem().getValorVenda() == null || item.getItem().getValorVenda() <= 0.0) {
-	        	        result.rejectValue("orcamentoItens["+i+"].precoUnitario", "Min", "Preço unitário inválido");
-	        	    }
-	        	}
+	            for (int i = 0; i < orcamento.getOrcamentoItens().size(); i++) {
+	                OrcamentoItem item = orcamento.getOrcamentoItens().get(i);
+	                
+	                if (item.getItem() == null || item.getItem().getId() == null) {
+	                    result.rejectValue("orcamentoItens["+i+"].item", "NotNull", "Selecione um item válido");
+	                    continue;
+	                }
+	                
+	                if (item.getQuantidade() == null || item.getQuantidade() < 1) {
+	                    result.rejectValue("orcamentoItens["+i+"].quantidade", "Min", "Quantidade deve ser maior que 0");
+	                }
+	            }
 	        }
 
 	        if (result.hasErrors()) {
+	            System.out.println("ERROS DE VALIDAÇÃO: " + result.getAllErrors());
 	            carregarDadosBaseModel(model);
 	            return "orcamento/formulario";
 	        }
@@ -161,31 +168,28 @@ public class OrcamentoController {
 	            .orElseThrow(() -> new IllegalArgumentException("Tema inválido"));
 	        orcamento.setTema(tema);
 
-	        List<OrcamentoItem> itensValidos = new ArrayList<>();
 	        for (OrcamentoItem item : orcamento.getOrcamentoItens()) {
 	            Item itemDoBanco = itemRepository.findById(item.getItem().getId())
-	                .orElseThrow(() -> new IllegalArgumentException("Item inválido: " + item.getItem().getId()));
+	                .orElseThrow(() -> new IllegalArgumentException("Item inválido"));
 	            
-	            OrcamentoItem novoItem = new OrcamentoItem();
-	            novoItem.setOrcamento(orcamento);
-	            novoItem.setItem(itemDoBanco);
-	            novoItem.setQuantidade(item.getQuantidade());
-	            novoItem.getItem().setValorVenda(itemDoBanco.getValorVenda());
-	            
-	            itensValidos.add(novoItem);
+	            item.setItem(itemDoBanco);
+	            item.setOrcamento(orcamento);
 	        }
 	        
-	        orcamento.getOrcamentoItens().clear();
-	        orcamento.getOrcamentoItens().addAll(itensValidos);
+	        orcamento.getOrcamentoItens().forEach(item -> {
+	            System.out.println("Item ID: " + item.getItem().getId() + 
+	                              ", Quantidade: " + item.getQuantidade() +
+	                              ", Preço: " + item.getItem().getValorVenda());
+	        });
 	        
 	        orcamento.setValorTotal();
-	        
 	        orcamentoRepository.save(orcamento);
 	        
 	        redirectAttributes.addFlashAttribute("success", "Orçamento salvo com sucesso!");
 	        return "redirect:/orcamento";
 
 	    } catch (Exception e) {
+	        e.printStackTrace();
 	        model.addAttribute("error", "Erro ao cadastrar orçamento: " + e.getMessage());
 	        carregarDadosBaseModel(model);
 	        return "orcamento/formulario";
@@ -200,90 +204,121 @@ public class OrcamentoController {
 	    model.addAttribute("estados", Estados.values());
 	}
 
-	@PutMapping
-	@Transactional
-	public String atualizar(@RequestParam Long id, @RequestParam Long clienteId, @RequestParam Long temaId,
-			@RequestParam(required = false) List<Long> itemIds,
-			@RequestParam(required = false) List<Integer> quantidades, @RequestParam String uf,
-			@RequestParam String complemento, @Valid DadosAtualizacaoOrcamento dados,
-			RedirectAttributes redirectAttributes, Model model) {
-		try {
-			Estados estado = Estados.valueOf(uf);
-
-			var orcamento = orcamentoRepository.findById(id)
-					.orElseThrow(() -> new IllegalArgumentException("Orçamento não encontrado"));
-
-			if (dados.dtHoraInicio().isBefore(LocalDateTime.now())) {
-				model.addAttribute("error", "A data do evento deve ser futura");
-				return carregarFormularioEdicao(id, model, clienteId, temaId, itemIds, dados);
-			}
-
-			boolean existeConflito = orcamentoRepository.existsByDataAndLocalAndEnderecoAndStatusNotExcluindoId(
-					dados.dtHoraInicio(), dados.logradouro(), dados.bairro(), dados.numero(), dados.cidade(), estado,
-					dados.cep(), dados.complemento(), StatusOrcamento.REPROVADO, orcamento.getId());
-
-			if (existeConflito) {
-				model.addAttribute("error", "Já existe outro orçamento com mesma data, local e endereço");
-				return carregarFormularioEdicao(id, model, clienteId, temaId, itemIds, dados);
-			}
-
-			var cliente = clienteRepository.findById(clienteId)
-					.orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado"));
-			var tema = temaRepository.findById(temaId)
-					.orElseThrow(() -> new IllegalArgumentException("Tema não encontrado"));
-
-			List<ItemQuantidade> itensComQuantidade = new ArrayList<>();
-			if (itemIds != null && quantidades != null && itemIds.size() == quantidades.size()) {
-				for (int i = 0; i < itemIds.size(); i++) {
-					Long itemId = itemIds.get(i);
-					Integer quantidade = quantidades.get(i);
-					if (quantidade != null && quantidade > 0) {
-						var item = itemRepository.findById(itemId)
-								.orElseThrow(() -> new IllegalArgumentException("Item não encontrado: " + itemId));
-						itensComQuantidade.add(new ItemQuantidade(item, quantidade));
-					}
-				}
-			}
-
-			DadosAtualizacaoOrcamento dadosAtualizados = new DadosAtualizacaoOrcamento(id, cliente, tema,
-					itensComQuantidade, dados.dtHoraInicio(), dados.status(), dados.logradouro(), dados.bairro(),
-					dados.numero(), dados.cidade(), estado, dados.cep(), complemento);
-
-			if (dados.status() == StatusOrcamento.APROVADO && orcamento.getStatus() != StatusOrcamento.APROVADO) {
-				Pedido pedido = new Pedido(orcamento);
-				pedidoRepository.save(pedido);
-			}
-
-			orcamento.atualizarInformacoes(dadosAtualizados);
-			orcamentoRepository.save(orcamento);
-			redirectAttributes.addFlashAttribute("success", "Orçamento atualizado com sucesso!");
-			return "redirect:/orcamento";
-
-		} catch (IllegalArgumentException e) {
-			model.addAttribute("error", "UF inválida: " + e.getMessage());
-			return carregarFormularioEdicao(id, model, clienteId, temaId, itemIds, dados);
-		} catch (Exception e) {
-			model.addAttribute("error", "Erro ao atualizar orçamento: " + e.getMessage());
-			return carregarFormularioEdicao(id, model, clienteId, temaId, itemIds, dados);
-		}
+	@GetMapping("/editar/{id}")
+	public String carregarFormularioEdicao(@PathVariable Long id, Model model) throws JsonProcessingException {
+	    Orcamento orcamento = orcamentoRepository.findById(id)
+	            .orElseThrow(() -> new IllegalArgumentException("Orçamento não encontrado"));
+	    
+	    Hibernate.initialize(orcamento.getOrcamentoItens());
+	    
+	    List<Map<String, Object>> itensParaFront = new ArrayList<>();
+	    for (OrcamentoItem item : orcamento.getOrcamentoItens()) {
+	        Map<String, Object> itemMap = new HashMap<>();
+	        itemMap.put("itemId", item.getItem().getId());
+	        itemMap.put("descricao", item.getItem().getDescricao());
+	        itemMap.put("quantidade", item.getQuantidade());
+	        itemMap.put("valorVenda", item.getItem().getValorVenda());
+	        itensParaFront.add(itemMap);
+	    }
+	    
+	    model.addAttribute("orcamento", orcamento);
+	    model.addAttribute("itensJson", new ObjectMapper().writeValueAsString(itensParaFront));
+	    model.addAttribute("items", itemRepository.findAll());
+	    model.addAttribute("temas", temaRepository.findAll());
+	    model.addAttribute("clientes", clienteRepository.findAll());
+	    
+	    return "orcamento/formulario";
 	}
 
-	private String carregarFormularioEdicao(Long id, Model model, Long clienteId, Long temaId, List<Long> itens,
-			DadosAtualizacaoOrcamento dados) {
-		var orcamento = orcamentoRepository.findById(id)
-				.orElseThrow(() -> new IllegalArgumentException("Orçamento não encontrado"));
+	@PutMapping("/{id}")
+	@Transactional
+	public String atualizar(@PathVariable Long id, @Valid @ModelAttribute("orcamento") Orcamento orcamento, 
+	                       BindingResult result,
+	                       RedirectAttributes redirectAttributes, 
+	                       Model model) {
+	    
+	    if (result.hasErrors()) {
+	        carregarDadosBaseModel(model);
+	        return "orcamento/formulario";
+	    }
+	    
+	    try {
+	        Orcamento orcamentoExistente = orcamentoRepository.findById(id)
+	                .orElseThrow(() -> new IllegalArgumentException("Orçamento não encontrado"));
 
-		model.addAttribute("orcamento", orcamento);
-		model.addAttribute("clientes", clienteRepository.findAll());
-		model.addAttribute("temas", temaRepository.findAll());
-		model.addAttribute("items", itemRepository.findAll());
-		model.addAttribute("clienteId", clienteId);
-		model.addAttribute("temaId", temaId);
-		model.addAttribute("itens", itens);
-		model.addAttribute("dados", dados);
-		model.addAttribute("statusOrcamentoValues", StatusOrcamento.values());
-		model.addAttribute("estados", Estados.values());
-		return "orcamento/formulario";
+	        if (orcamento.getDtHoraInicio().isBefore(LocalDateTime.now())) {
+	            model.addAttribute("error", "A data do evento deve ser futura");
+	            carregarDadosBaseModel(model);
+	            return "orcamento/formulario";
+	        }
+
+	        boolean existeConflito = orcamentoRepository.existsByDataAndLocalAndEnderecoAndStatusNotExcluindoId(
+	                orcamento.getDtHoraInicio(), 
+	                orcamento.getLogradouro(), 
+	                orcamento.getBairro(), 
+	                orcamento.getNumero(), 
+	                orcamento.getCidade(), 
+	                orcamento.getUf(), 
+	                orcamento.getCep(), 
+	                orcamento.getComplemento(), 
+	                StatusOrcamento.REPROVADO, 
+	                id);
+
+	        if (existeConflito) {
+	            model.addAttribute("error", "Já existe outro orçamento com mesma data, local e endereço");
+	            carregarDadosBaseModel(model);
+	            return "orcamento/formulario";
+	        }
+
+	        orcamentoExistente.setDtHoraInicio(orcamento.getDtHoraInicio());
+	        orcamentoExistente.setLogradouro(orcamento.getLogradouro());
+	        orcamentoExistente.setBairro(orcamento.getBairro());
+	        orcamentoExistente.setNumero(orcamento.getNumero());
+	        orcamentoExistente.setCidade(orcamento.getCidade());
+	        orcamentoExistente.setUf(orcamento.getUf());
+	        orcamentoExistente.setCep(orcamento.getCep());
+	        orcamentoExistente.setComplemento(orcamento.getComplemento());
+	        orcamentoExistente.setStatus(orcamento.getStatus());
+
+	        if (orcamento.getCliente() != null && orcamento.getCliente().getId() != null) {
+	            Cliente cliente = clienteRepository.findById(orcamento.getCliente().getId())
+	                    .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado"));
+	            orcamentoExistente.setCliente(cliente);
+	        }
+
+	        if (orcamento.getTema() != null && orcamento.getTema().getId() != null) {
+	            Tema tema = temaRepository.findById(orcamento.getTema().getId())
+	                    .orElseThrow(() -> new IllegalArgumentException("Tema não encontrado"));
+	            orcamentoExistente.setTema(tema);
+	        }
+
+	        orcamentoExistente.getOrcamentoItens().clear();
+	        if (orcamento.getOrcamentoItens() != null) {
+	            for (OrcamentoItem item : orcamento.getOrcamentoItens()) {
+	                Item itemDoBanco = itemRepository.findById(item.getItem().getId())
+	                        .orElseThrow(() -> new IllegalArgumentException("Item não encontrado: " + item.getItem().getId()));
+	                
+	                OrcamentoItem novoItem = new OrcamentoItem();
+	                novoItem.setItem(itemDoBanco);
+	                novoItem.setQuantidade(item.getQuantidade());
+	                novoItem.getItem().setValorVenda(itemDoBanco.getValorVenda());
+	                novoItem.setOrcamento(orcamentoExistente);
+	                
+	                orcamentoExistente.getOrcamentoItens().add(novoItem);
+	            }
+	        }
+
+	        orcamentoExistente.setValorTotal();
+	        
+	        orcamentoRepository.save(orcamentoExistente);
+	        redirectAttributes.addFlashAttribute("success", "Orçamento atualizado com sucesso!");
+	        return "redirect:/orcamento";
+
+	    } catch (Exception e) {
+	        model.addAttribute("error", "Erro ao atualizar orçamento: " + e.getMessage());
+	        carregarDadosBaseModel(model);
+	        return "orcamento/formulario";
+	    }
 	}
 
 	@DeleteMapping

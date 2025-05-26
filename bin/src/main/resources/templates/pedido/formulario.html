@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{index.html}">
+<head>
+    <title>Cadastro de Pedido</title>
+    <link rel="stylesheet" th:href="@{/css/estilo.css}">
+</head>
+<body>
+    <div layout:fragment="conteudo">
+        <div class="box">
+            <h1 th:text="${pedido?.id != null} ? 'Editar Pedido' : 'Novo Pedido'"></h1>
+
+            <form method="post" th:action="@{/pedido}">
+                <input type="hidden" name="_method" value="put" th:if="${pedido != null}">
+                <input type="hidden" name="id" th:value="${pedido?.id}">
+
+                <div>
+                    <label for="orcamento">Orçamento Aprovado:</label>
+                    <select id="orcamento" name="orcamentoId" required th:disabled="${pedido?.id != null}">
+                        <option value="">Selecione um orçamento aprovado</option>
+                        <option th:each="orcamento : ${orcamentos}"
+                            th:value="${orcamento.id}"
+                            th:text="${orcamento.id} + ' - ' + ${orcamento.cliente.nome} + ' - R$ ' + ${#numbers.formatDecimal(orcamento.valorTotal, 1, 2, 'POINT')}"
+                            th:selected="${pedido?.orcamento?.id == orcamento.id}">
+                        </option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="valorTotal">Valor Total do Evento:</label>
+                    <input type="number" id="valorTotal" name="valorTotal" step="0.01" min="0"
+                        th:value="${pedido?.valorTotal}" required>
+                </div>
+                
+                <div>
+    			<label for="dataHoraEvento">Data e Hora do Evento:</label>
+   				<input type="datetime-local" id="dataHoraEvento" name="dataHoraEvento"
+       	 				th:value="${pedido?.dtHoraInicio != null ? #temporals.format(pedido.dtHoraInicio, 'yyyy-MM-dd''T''HH:mm') : ''}"
+       					required>
+				</div>
+
+
+                <input type="submit" th:value="${pedido?.id != null} ? 'Atualizar' : 'Cadastrar'">
+            </form>
+        </div>
+    </div>
+</body>
+</html>

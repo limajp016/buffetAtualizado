@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{index.html}">
+<head>
+    <title>Cadastro de Categoria</title>
+    <link rel="stylesheet" href="../static/css/estilo.css" th:href="@{/css/estilo.css}">
+    <style>
+        .alert {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            text-align: center;
+            position: relative;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .error {
+            color: #dc3545;
+            font-size: 0.8em;
+            display: block;
+            margin-top: 5px;
+        }
+
+        .box {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .box div {
+            margin-bottom: 15px;
+        }
+
+        .box label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .box input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+
+        .box input[type="submit"] {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+
+        .box input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+
+        .close {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            font-size: 1.2em;
+            line-height: 1;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 15px;
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Melhorias para campos inválidos */
+        input:invalid {
+            border-color: #dc3545;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #80bdff;
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+        }
+    </style>
+</head>
+<body>
+    <body>
+    <div layout:fragment="conteudo">
+        <div class="box">
+            <h1 style="text-align: center; margin-bottom: 20px;">Cadastro de Categoria</h1>
+
+            <div th:if="${mensagem}" class="alert alert-success">
+                <span th:text="${mensagem}"></span>
+                <button type="button" class="close" onclick="this.parentElement.style.display='none'">×</button>
+            </div>
+
+            <div th:if="${erro}" class="alert alert-danger">
+                <span th:text="${erro}"></span>
+                <button type="button" class="close" onclick="this.parentElement.style.display='none'">×</button>
+            </div>
+
+            <form method="post" th:action="@{/categoria}" th:object="${categoria}">
+                <input type="hidden" name="_method" value="put" th:if="${categoria?.id != null}">
+                <input type="hidden" name="id" th:value="${categoria?.id}">
+
+                <div>
+                    <label for="descricao">Descrição:</label>
+                    <input type="text" id="descricao" name="descricao" th:field="*{descricao}"
+                           required minlength="3" maxlength="100" placeholder="Digite a descrição da categoria">
+                    <span th:if="${#fields != null and #fields.hasErrors('descricao')}" th:errors="*{descricao}" class="error"></span>
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <input type="submit" th:value="${categoria?.id != null ? 'Atualizar' : 'Cadastrar'}" 
+                           class="btn-submit">
+                </div>
+            </form>
+
+            <a href="/categoria" class="back-link">← Voltar para a listagem</a>
+        </div>
+    </div>
+
+    <script>
+        setTimeout(() => {
+            document.querySelectorAll('.alert').forEach(alert => {
+                alert.style.display = 'none';
+            });
+        }, 5000);
+    </script>
+</body>
+</html>

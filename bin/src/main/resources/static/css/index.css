@@ -1,0 +1,41 @@
+body {
+	font-family: Arial, sans-serif;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 100vh;
+	background-color: #f2f2f2;
+}
+
+header {
+	width: 250px; /* largura da navbar */
+	background-color: #3498db; /* cor de fundo da navbar */
+	border-radius: 10px; /* bordas arredondadas */
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); /* sombra suave */
+	padding: 20px;
+}
+
+nav ul {
+	list-style-type: none;
+	padding: 0;
+	margin: 0;
+}
+
+nav ul li {
+	margin-bottom: 10px;
+}
+
+nav ul li a {
+	display: block;
+	color: #fff;
+	text-decoration: none;
+	padding: 10px;
+	transition: background-color 0.3s ease;
+}
+
+nav ul li a:hover {
+	background-color: #2980b9; /* cor de fundo ao passar o mouse */
+	border-radius: 5px; /* bordas arredondadas ao passar o mouse */
+}

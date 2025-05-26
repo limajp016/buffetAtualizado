@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Formulário de Aluguel</title>
+<link rel="stylesheet" href="../static/css/estilo.css"
+	th:href="@{/css/estilo.css}">
+</head>
+<body>
+	<div>
+		<h1>Formulário de Aluguel</h1>
+		<form method="post" action="/aluguel">
+			<input type="hidden" name="_method" value="put"
+				th:if="${aluguel != null}"> <input type="hidden" name="id"
+				th:value="${aluguel?.id}">
+
+			<div>
+				<label for="cliente">Cliente:</label> <select id="cliente"
+					name="clienteId">
+					<option th:each="cliente : ${clientes}" th:value="${cliente.id}"
+						th:text="${cliente.nome}"></option>
+				</select>
+			</div>
+
+			<div>
+				<label for="tema">Tema:</label> <select id="tema" name="temaId"
+					required>
+					<option th:each="tema : ${temas}" th:value="${tema.id}"
+						th:text="${tema.descricao}"></option>
+				</select>
+			</div>
+
+			<div>
+				<label for="itens">Itens:</label>
+				<div id="item-list">
+					<div class="item-entry"
+						th:if="${aluguel == null || #lists.isEmpty(aluguel.itens)}">
+						<select name="itens" required>
+							<option th:each="item : ${itens}" th:value="${item.id}"
+								th:text="${item.descricao}"></option>
+						</select>
+						<button type="button" onclick="removeItem(this)">Remover</button>
+					</div>
+					<div th:each="itemAluguel : ${aluguel?.itens}" class="item-entry">
+						<select name="itens" required>
+							<option th:each="item : ${itens}" th:value="${item.id}"
+								th:text="${item.descricao}"
+								th:selected="${item.id == itemAluguel.id}"></option>
+						</select>
+						<button type="button" onclick="removeItem(this)">Remover</button>
+					</div>
+				</div>
+				<button type="button" onclick="addItem()">Adicionar Item</button>
+			</div>
+
+			<script>
+            function addItem() {
+                let itemList = document.getElementById('item-list');
+                let itemEntry = document.querySelector('.item-entry');
+                let newItemEntry = itemEntry.cloneNode(true);
+                let select = newItemEntry.querySelector('select');
+                select.selectedIndex = 0; // Reset select to first option
+                itemList.appendChild(newItemEntry);
+            }
+
+            function removeItem(button) {
+                let itemEntry = button.parentElement;
+                let itemList = document.getElementById('item-list');
+                if (itemList.children.length > 1) {
+                    itemList.removeChild(itemEntry);
+                } else {
+                    alert('A lista deve conter pelo menos um item.');
+                }
+            }
+        </script>
+
+			<div>
+				<label for="dtHoraInicio">Data e Hora de Início:</label> <input
+					type="datetime-local" id="dtHoraInicio" name="dtHoraInicio"
+					th:value="${aluguel?.dtHoraInicio}">
+			</div>
+
+			<div>
+				<label for="dtHoraFim">Data e Hora de Fim:</label> <input
+					type="datetime-local" id="dtHoraFim" name="dtHoraFim"
+					th:value="${aluguel?.dtHoraFim}">
+			</div>
+
+			<div>
+				<label for="logradouro">Logradouro:</label> <input type="text"
+					id="logradouro" name="logradouro" th:value="${aluguel?.logradouro}">
+			</div>
+
+			<div>
+				<label for="numero">Número:</label> <input type="text" id="numero"
+					name="numero" th:value="${aluguel?.numero}">
+			</div>
+
+			<div>
+				<label for="complemento">Complemento:</label> <input type="text"
+					id="complemento" name="complemento"
+					th:value="${aluguel?.complemento}">
+			</div>
+
+			<div>
+				<label for="bairro">Bairro:</label> <input type="text" id="bairro"
+					name="bairro" th:value="${aluguel?.bairro}">
+			</div>
+
+			<div>
+				<label for="cidade">Cidade:</label> <input type="text" id="cidade"
+					name="cidade" th:value="${aluguel?.cidade}">
+			</div>
+
+			<div>
+				<label for="uf">UF:</label> <input type="text" id="uf" name="uf"
+					th:value="${aluguel?.uf}">
+			</div>
+
+			<div>
+				<label for="cep">CEP:</label> <input type="text" id="cep" name="cep"
+					th:value="${aluguel?.cep}">
+			</div>
+
+			<input type="submit" value="Cadastrar">
+		</form>
+
+	</div>
+</body>
+</html>

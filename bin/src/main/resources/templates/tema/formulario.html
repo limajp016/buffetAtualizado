@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{index.html}">
+<head>
+    <title>Cadastro de Tema</title>
+    <link rel="stylesheet" th:href="@{/css/estilo.css}">
+    <style>
+        .box {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .box div {
+            margin-bottom: 15px;
+        }
+        .box label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        .box input, .box textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+        }
+        .box button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .image-preview {
+            max-width: 200px;
+            max-height: 200px;
+            margin-top: 10px;
+            display: block;
+        }
+        .alert {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .remove-image {
+            margin-top: 5px;
+            color: #dc3545;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+        .remove-image:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div layout:fragment="conteudo">
+        <div class="box">
+            <h1 style="text-align: center;">
+                <span th:if="${tema.id != null}">Editar Tema</span>
+                <span th:if="${tema.id == null}">Novo Tema</span>
+            </h1>
+
+            <div th:if="${mensagem}" class="alert alert-success">
+                <span th:text="${mensagem}"></span>
+            </div>
+
+            <div th:if="${erro}" class="alert alert-danger">
+                <span th:text="${erro}"></span>
+            </div>
+
+            <div th:if="${erroImagem}" class="alert alert-danger">
+                <span th:text="${erroImagem}"></span>
+            </div>
+
+            <form th:action="@{/tema}" th:method="${tema.id != null ? 'put' : 'post'}" enctype="multipart/form-data">
+                <input type="hidden" name="id" th:value="${tema.id}" />
+
+                <div>
+                    <label for="descricao">Descrição:</label>
+                    <input type="text" id="descricao" name="descricao" th:value="${tema.descricao}" required>
+                </div>
+
+                <div>
+                    <label for="preco">Preço:</label>
+                    <input type="number" id="preco" name="preco" step="0.01" th:value="${tema.preco}" required>
+                </div>
+
+                <div>
+                    <label for="imagem">Imagem:</label>
+                    <input type="file" id="imagem" name="imagem" accept="image/jpeg, image/png" onchange="previewImage(this)">
+                    
+                    <div th:if="${tema.imagemBase64 != null}">
+                        <img id="imagePreview" class="image-preview" th:src="${tema.imagemBase64}">
+                        <div class="remove-image" onclick="removeImage()">Remover imagem</div>
+                        <input type="hidden" id="removerImagem" name="removerImagem" value="false">
+                    </div>
+                    <div th:unless="${tema.imagemBase64 != null}">
+                        <img id="imagePreview" class="image-preview" style="display: none;">
+                    </div>
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <button type="submit" class="btn-submit"
+                            th:text="${tema != null and tema.id != null} ? 'Atualizar' : 'Cadastrar'"></button>
+                </div>
+            </form>
+
+            <a th:href="@{/tema}" style="display: inline-block; margin-top: 15px;">← Voltar para a listagem</a>
+        </div>
+    </div>
+
+    <script>
+        function previewImage(input) {
+            const preview = document.getElementById('imagePreview');
+            const removeCheckbox = document.getElementById('removerImagem');
+            
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    if (removeCheckbox) {
+                        removeCheckbox.value = 'false';
+                    }
+                }
+                reader.readAsDataURL(input.files[0]);
+            } else if (preview && !preview.src) {
+                preview.style.display = 'none';
+            }
+        }
+
+        function removeImage() {
+            const preview = document.getElementById('imagePreview');
+            const fileInput = document.getElementById('imagem');
+            const removeCheckbox = document.getElementById('removerImagem');
+            
+            preview.style.display = 'none';
+            preview.src = '';
+            fileInput.value = '';
+            
+            if (removeCheckbox) {
+                removeCheckbox.value = 'true';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="pt" xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{index.html}">
+<head>
+<title>Cadastro de Item</title>
+<link rel="stylesheet" href="../static/css/estilo.css"
+	th:href="@{/css/estilo.css}">
+<style>
+.alert {
+	padding: 10px;
+	margin-bottom: 15px;
+	border-radius: 5px;
+	font-weight: bold;
+	text-align: center;
+	position: relative;
+}
+
+.alert-success {
+	background-color: #d4edda;
+	color: #155724;
+	border: 1px solid #c3e6cb;
+}
+
+.alert-danger {
+	background-color: #f8d7da;
+	color: #721c24;
+	border: 1px solid #f5c6cb;
+}
+
+.error {
+	color: #dc3545;
+	font-size: 0.8em;
+	display: block;
+	margin-top: 5px;
+}
+
+.box {
+	max-width: 500px;
+	margin: 0 auto;
+	padding: 20px;
+	background-color: #f8f9fa;
+	border-radius: 8px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.box div {
+	margin-bottom: 15px;
+}
+
+.box label {
+	display: block;
+	margin-bottom: 5px;
+	font-weight: 500;
+}
+
+.box input[type="text"], .box input[type="number"], .box input[type="file"],
+	.box select, .box textarea {
+	width: 100%;
+	padding: 10px;
+	box-sizing: border-box;
+	border: 1px solid #ced4da;
+	border-radius: 4px;
+	font-size: 1em;
+}
+
+.box input[type="submit"] {
+	background-color: #007bff;
+	color: white;
+	padding: 10px 20px;
+	border: none;
+	border-radius: 5px;
+	cursor: pointer;
+	font-size: 1em;
+	width: 100%;
+	transition: background-color 0.3s;
+}
+
+.box input[type="submit"]:hover {
+	background-color: #0056b3;
+}
+
+.close {
+	position: absolute;
+	right: 10px;
+	top: 50%;
+	transform: translateY(-50%);
+	cursor: pointer;
+	font-size: 1.2em;
+	line-height: 1;
+	background: none;
+	border: none;
+	padding: 0;
+}
+
+.back-link {
+	display: inline-block;
+	margin-top: 15px;
+	color: #007bff;
+	text-decoration: none;
+}
+
+.back-link:hover {
+	text-decoration: underline;
+}
+
+input:invalid {
+	border-color: #dc3545;
+}
+
+input:focus {
+	outline: none;
+	border-color: #80bdff;
+	box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, .25);
+}
+
+.image-preview {
+	max-width: 100%;
+	max-height: 200px;
+	margin-top: 10px;
+	border-radius: 4px;
+	display: block;
+}
+
+.checkbox-container {
+	display: flex;
+	align-items: center;
+	margin-top: 10px;
+}
+
+.checkbox-container input[type="checkbox"] {
+	width: auto;
+	margin-right: 10px;
+}
+
+.error-message {
+    color: #dc3545;
+    font-size: 0.9em;
+    margin-top: 5px;
+    padding: 5px;
+    background-color: #f8d7da;
+    border-radius: 4px;
+    border: 1px solid #f5c6cb;
+}
+</style>
+</head>
+<body>
+	<div layout:fragment="conteudo">
+		<div class="box">
+			<h1 style="text-align: center; margin-bottom: 20px;"
+				th:text="${item?.id != null} ? 'Editar Item' : 'Cadastrar Item'"></h1>
+
+			<div th:if="${mensagem}" class="alert alert-success">
+				<span th:text="${mensagem}"></span>
+				<button type="button" class="close"
+					onclick="this.parentElement.style.display='none'">×</button>
+			</div>
+
+			<div th:if="${erro}" class="alert alert-danger">
+				<span th:text="${erro}"></span>
+				<button type="button" class="close"
+					onclick="this.parentElement.style.display='none'">×</button>
+			</div>
+
+			<form method="post" th:action="@{/item}"
+				enctype="multipart/form-data">
+				<input type="hidden" name="_method"
+					th:value="${item?.id != null} ? 'put' : 'post'"> <input
+					type="hidden" name="id" th:value="${item?.id}">
+
+				<div>
+					<label for="descricao">Descrição:</label> <input type="text"
+						id="descricao" name="descricao" th:value="${item?.descricao}"
+						required minlength="3" maxlength="100"
+						placeholder="Digite a descrição do item">
+				</div>
+
+				<div>
+					<label for="valorCusto">Valor Custo:</label> <input type="number"
+						id="valorCusto" name="valorCusto" th:value="${item?.valorCusto}"
+						step="0.01" min="0" required placeholder="0,00">
+				</div>
+
+				<div>
+					<label for="valorVenda">Valor Venda:</label> <input type="number"
+						id="valorVenda" name="valorVenda" th:value="${item?.valorVenda}"
+						step="0.01" min="0" required placeholder="0,00">
+				</div>
+
+				<div>
+					<label for="campoDesc">Campo Descritivo:</label>
+					<textarea id="campoDesc" name="campoDesc"
+						th:text="${item?.campoDesc}" placeholder="Informações adicionais"></textarea>
+				</div>
+
+				<div>
+					<label for="categoriaId">Categoria:</label> <select
+						id="categoriaId" name="categoriaId" required>
+						<option value="">Selecione uma categoria</option>
+						<option th:each="categoria : ${categorias}"
+							th:value="${categoria.id}" th:text="${categoria.descricao}"
+							th:selected="${item?.categoria?.id == categoria.id}"></option>
+					</select>
+				</div>
+
+				<div class="form-group">
+					<label for="imagem">Imagem (Máx. 2MB - JPG/PNG):</label> <input
+						type="file" id="imagem" name="imagem"
+						accept="image/jpeg, image/png">
+
+					<div th:if="${erroImagem}" class="error-message">
+						<span th:text="${erroImagem}"></span>
+					</div>
+
+					<div th:if="${item?.imagemBase64 != null}">
+						<img th:src="'data:image/jpeg;base64,' + ${item.imagemBase64}"
+							class="image-preview" alt="Preview da imagem">
+						<div class="checkbox-container">
+							<input type="checkbox" id="removerImagem" name="removerImagem">
+							<label for="removerImagem">Remover imagem atual</label>
+						</div>
+					</div>
+				</div>
+
+				<div style="margin-top: 20px;">
+					<input type="submit"
+						th:value="${item?.id != null} ? 'Atualizar' : 'Cadastrar'"
+						class="btn-submit">
+				</div>
+			</form>
+
+			<a href="/item" class="back-link">← Voltar para a listagem</a>
+		</div>
+	</div>
+
+	<script>
+        setTimeout(() => {
+            document.querySelectorAll('.alert').forEach(alert => {
+                alert.style.display = 'none';
+            });
+        }, 5000);
+
+        document.getElementById('imagem')?.addEventListener('change', function(e) {
+            if (this.files && this.files[0]) {
+                var reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    var preview = document.querySelector('.image-preview');
+                    if (!preview) {
+                        preview = document.createElement('img');
+                        preview.className = 'image-preview';
+                        document.querySelector('form').insertBefore(preview, document.querySelector('form div:last-child'));
+                    }
+                    preview.src = e.target.result;
+                }
+                
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+    </script>
+</body>
+</html>

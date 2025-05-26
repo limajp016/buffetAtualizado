@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title layout:title-pattern="$CONTENT_TITLE">Sistema de Aluguel de Festas Infantis</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Estilos customizados -->
+    <style>
+        /* Estilo para o navbar */
+        .navbar {
+            background-color: #0d6efd !important;
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+        }
+        
+        .navbar-brand {
+            font-weight: 600;
+            font-size: 1.25rem;
+        }
+        
+        .nav-link {
+            font-weight: 500;
+            padding: 0.5rem 1rem !important;
+            border-radius: 0.25rem;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+        @media (max-width: 767.98px) {
+            .navbar-collapse {
+                padding-top: 1rem;
+            }
+            
+            .nav-item {
+                margin-bottom: 0.5rem;
+            }
+        }
+
+        .main-content {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+
+        footer {
+            background-color: #f8f9fa;
+            padding: 1.5rem 0;
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-md navbar-dark shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="/">Sistema de Aluguel de Festas Infantis</a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" 
+                    aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item mx-1">
+                        <a class="nav-link" href="/categoria">Categorias</a>
+                    </li>
+                    <li class="nav-item mx-1">
+                        <a class="nav-link" href="/item">Itens</a>
+                    </li>
+                    <li class="nav-item mx-1">
+                        <a class="nav-link" href="/cliente">Clientes</a>
+                    </li>
+                    <li class="nav-item mx-1">
+                        <a class="nav-link" href="/tema">Temas</a>
+                    </li>
+                    <li class="nav-item mx-1">
+                        <a class="nav-link" href="/orcamento">Orçamentos</a>
+                    </li>
+                    <li class="nav-item mx-1">
+                        <a class="nav-link" href="/pedido">Pedidos</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="container" layout:fragment="conteudo">
+        </div>
+    </main>
+
+    <footer>
+        <div class="container text-center">
+            <span class="text-muted">Sistema de Aluguel de Festas Infantis © 2025 - Todos os direitos reservados</span>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" 
+            integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" 
+            crossorigin="anonymous"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const navLinks = document.querySelectorAll('.nav-item .nav-link');
+            const navbarToggler = document.querySelector('.navbar-toggler');
+            const navbarCollapse = document.querySelector('.navbar-collapse');
+            
+            navLinks.forEach(function(navLink) {
+                navLink.addEventListener('click', function() {
+                    if (navbarCollapse.classList.contains('show')) {
+                        navbarToggler.click();
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
