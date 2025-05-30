@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.fateczl.BuffetRafaela.entities.Cliente;
+import com.fateczl.BuffetRafaela.entities.Item;
 import com.fateczl.BuffetRafaela.entities.Orcamento;
 import com.fateczl.BuffetRafaela.entities.Tema;
 import com.fateczl.BuffetRafaela.entities.enums.Estados;
@@ -26,15 +27,25 @@ public record DadosListagemOrcamento(
     String cep,
     String complemento
 ) {
+    public record ItemQuantidade(
+        Item item,
+        Integer quantidade,
+        Double precoUnitario,
+        Double subtotal
+    ) {}
 
     public DadosListagemOrcamento(Orcamento orcamento) {
         this(
             orcamento.getId(),
             orcamento.getCliente(),
             orcamento.getTema(),
-            orcamento.getOrcamentoItens().stream()
-                .map(orcamentoItem -> new ItemQuantidade(orcamentoItem.getItem(), orcamentoItem.getQuantidade()))
-                .collect(Collectors.toList()), 
+            orcamento.getItens().stream()
+                .map(item -> new ItemQuantidade(
+                    item.getItem(),
+                    item.getQuantidade(),
+                    item.getPrecoUnitario(),
+                    item.getSubtotal()))
+                .collect(Collectors.toList()),
             orcamento.getDtHoraInicio(),
             orcamento.getStatus(),
             orcamento.getValorTotal(),

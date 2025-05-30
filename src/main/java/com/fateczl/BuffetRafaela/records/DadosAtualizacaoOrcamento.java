@@ -4,11 +4,13 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import com.fateczl.BuffetRafaela.entities.Cliente;
+import com.fateczl.BuffetRafaela.entities.Item;
 import com.fateczl.BuffetRafaela.entities.Tema;
 import com.fateczl.BuffetRafaela.entities.enums.Estados;
 import com.fateczl.BuffetRafaela.entities.enums.StatusOrcamento;
 
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 
 public record DadosAtualizacaoOrcamento(
     @NotNull Long id,
@@ -24,4 +26,9 @@ public record DadosAtualizacaoOrcamento(
     Estados uf,
     String cep,
     String complemento
-) {}
+) {
+    public record ItemQuantidade(
+        @NotNull Item item,
+        @NotNull @Positive Integer quantidade
+    ) {}
+}
