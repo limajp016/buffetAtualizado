@@ -3,7 +3,6 @@ package com.fateczl.BuffetRafaela.entities;
 import java.time.LocalDateTime;
 
 import com.fateczl.BuffetRafaela.entities.enums.StatusOrcamento;
-import com.fateczl.BuffetRafaela.records.DadosListagemPedido;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -26,7 +25,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @EqualsAndHashCode(of = "id")
 public class Pedido {
-    
+ 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -69,7 +68,7 @@ public class Pedido {
     public DadosListagemPedido toDadosListagem() {
         return new DadosListagemPedido(this);
     }
-*/    
+   
     protected void setOrcamento(Orcamento orcamento) {
         if (this.orcamento != null) {
             throw new IllegalStateException("Não é possível alterar o orçamento associado a um pedido");
@@ -84,4 +83,5 @@ public class Pedido {
     public void setDataEvento(LocalDateTime dataEvento) {
         throw new UnsupportedOperationException("Data do evento é derivada do orçamento e não pode ser alterada diretamente");
     }
+    */ 
 }

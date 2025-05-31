@@ -3,7 +3,6 @@ package com.fateczl.BuffetRafaela.entities;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fateczl.BuffetRafaela.records.DadosAtualizacaoItem;
 import com.fateczl.BuffetRafaela.records.DadosCadastroItem;
 
@@ -22,9 +21,15 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import jakarta.validation.Valid;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "item")
+@Getter
+@Setter
+@NoArgsConstructor
 @EqualsAndHashCode(of = "id")
 public class Item {
 
@@ -53,24 +58,13 @@ public class Item {
     @JoinColumn(name = "categoria_id", nullable = false)
     private Categoria categoria;
     
-    @JsonBackReference
-    @OneToMany(mappedBy = "item", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true)
-    private List<OrcamentoItem> orcamentoItens = new ArrayList<>();
-
+    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ItemOrcamento> orcamentos = new ArrayList<>();
+    
     @Transient
     private String imagemBase64;
 
     public Item() {
-    }
-
-    public Item(Long id, String descricao, Double valorCusto, Double valorVenda, String campoDesc, byte[] imagem, Categoria categoria) {
-        this.id = id;
-        this.descricao = descricao;
-        this.valorCusto = valorCusto;
-        this.valorVenda = valorVenda;
-        this.campoDesc = campoDesc;
-        this.imagem = imagem;
-        this.categoria = categoria;
     }
 
     public Item(DadosCadastroItem dados) {
@@ -166,21 +160,6 @@ public class Item {
     public void setImagemBase64(String imagemBase64) {
         this.imagemBase64 = imagemBase64;
     }
-
-    public List<OrcamentoItem> getOrcamentoItens() {
-        return orcamentoItens;
-    }
-
-    public void setOrcamentoItens(List<OrcamentoItem> orcamentoItens) {
-        this.orcamentoItens = orcamentoItens;
-    }
-    
-    public List<Orcamento> getOrcamentos() {
-        return orcamentoItens.stream()
-                .map(OrcamentoItem::getOrcamento)
-                .toList();
-    }
-
     
 }
 

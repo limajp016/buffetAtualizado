@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fateczl.BuffetRafaela.entities.enums.Estados;
 import com.fateczl.BuffetRafaela.entities.enums.StatusOrcamento;
 import com.fateczl.BuffetRafaela.records.DadosAtualizacaoOrcamento;
@@ -51,9 +52,10 @@ public class Orcamento {
     private Tema tema;
 
     @OneToMany(mappedBy = "orcamento", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OrcamentoItem> orcamentoItens = new ArrayList<>();
+    private List<ItemOrcamento> itens = new ArrayList<>();
 
     @Column(name = "dt_hr_inicio", nullable = false)
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     private LocalDateTime dtHoraInicio;
 
     @Enumerated(EnumType.STRING)
@@ -86,14 +88,9 @@ public class Orcamento {
     private String complemento;
     
     public Orcamento() {
-    	
     }
-    
+
     public Orcamento(DadosCadastroOrcamento dados) {
-        this.cliente = dados.cliente();
-        this.tema = dados.tema();
-        this.orcamentoItens = new ArrayList<>();
-        dados.itens().forEach(itemQuantidade -> addItem(itemQuantidade.item(), itemQuantidade.quantidade()));
         this.dtHoraInicio = dados.dtHoraInicio();
         this.status = dados.status();
         this.logradouro = dados.logradouro();
@@ -103,16 +100,21 @@ public class Orcamento {
         this.uf = dados.uf();
         this.cep = dados.cep();
         this.complemento = dados.complemento();
-        setValorTotal();
+        
+        this.itens = new ArrayList<>();
     }
 
     public void atualizarInformacoes(@Valid DadosAtualizacaoOrcamento dados) {
         if (dados.cliente() != null) {
             this.cliente = dados.cliente();
         }
+        if (dados.tema() != null) {
+            this.tema = dados.tema();
+        }
         if (dados.itens() != null) {
-            this.orcamentoItens.clear();
-            dados.itens().forEach(itemQuantidade -> addItem(itemQuantidade.item(), itemQuantidade.quantidade()));
+            this.itens.clear();
+            dados.itens().forEach(itemQuantidade -> 
+                addItem(itemQuantidade.item(), itemQuantidade.quantidade()));
         }
         if (dados.dtHoraInicio() != null) {
             this.dtHoraInicio = dados.dtHoraInicio();
@@ -124,7 +126,7 @@ public class Orcamento {
             this.logradouro = dados.logradouro();
         }
         if (dados.numero() != null) {
-        	this.numero = dados.numero();
+            this.numero = dados.numero();
         }
         if (dados.bairro() != null) {
             this.bairro = dados.bairro();
@@ -139,11 +141,46 @@ public class Orcamento {
             this.cep = dados.cep();
         }
         if (dados.complemento() != null) {
-        	this.complemento = dados.complemento();
+            this.complemento = dados.complemento();
         }
-        setValorTotal();
+        
+        calcularValorTotal();
     }
     
+    public void addItem(Item item, Integer quantidade) {
+        if (quantidade <= 0) {
+            throw new IllegalArgumentException("Quantidade deve ser maior que zero.");
+        }
+        
+        boolean itemJaAdicionado = itens.stream()
+            .anyMatch(io -> io.getItem().getId().equals(item.getId()));
+            
+        if (itemJaAdicionado) {
+            throw new IllegalStateException("Item já adicionado ao orçamento.");
+        }
+        
+        ItemOrcamento itemOrcamento = new ItemOrcamento(this, item, quantidade);
+        itens.add(itemOrcamento);
+        calcularValorTotal();
+    }
+    
+    public void removeItem(Item item) {
+        itens.removeIf(io -> io.getItem().getId().equals(item.getId()));
+        calcularValorTotal();
+    }
+    
+    public void calcularValorTotal() {
+        double valorItens = itens.stream()
+            .filter(Objects::nonNull)
+            .mapToDouble(ItemOrcamento::getSubtotal)
+            .sum();
+        
+        double precoTema = (this.tema != null && this.tema.getPreco() != null) ? 
+            this.tema.getPreco() : 0.0;
+        
+        this.valorTotal = valorItens + precoTema;
+    }
+
 	public Long getId() {
 		return id;
 	}
@@ -167,13 +204,13 @@ public class Orcamento {
 	public void setTema(Tema tema) {
 		this.tema = tema;
 	}
-	
-	public List<OrcamentoItem> getOrcamentoItens() {
-		return orcamentoItens;
+
+	public List<ItemOrcamento> getItens() {
+		return itens;
 	}
 
-	public void setOrcamentoItens(List<OrcamentoItem> orcamentoItens) {
-		this.orcamentoItens = orcamentoItens;
+	public void setItens(List<ItemOrcamento> itens) {
+		this.itens = itens;
 	}
 
 	public LocalDateTime getDtHoraInicio() {
@@ -207,13 +244,13 @@ public class Orcamento {
 	public void setLogradouro(String logradouro) {
 		this.logradouro = logradouro;
 	}
-	
+
 	public String getNumero() {
-	    return numero;
+		return numero;
 	}
 
 	public void setNumero(String numero) {
-	    this.numero = numero;
+		this.numero = numero;
 	}
 
 	public String getBairro() {
@@ -247,47 +284,13 @@ public class Orcamento {
 	public void setCep(String cep) {
 		this.cep = cep;
 	}
-	
+
 	public String getComplemento() {
-	    return complemento;
+		return complemento;
 	}
 
 	public void setComplemento(String complemento) {
-	    this.complemento = complemento;
+		this.complemento = complemento;
 	}
-	
-	public void addItem(Item item, Integer quantidade) {
-	    if (quantidade <= 0) {
-	        throw new IllegalArgumentException("Quantidade deve ser maior que zero.");
-	    }
-	    boolean itemJaAdicionado = orcamentoItens.stream()
-	            .anyMatch(oi -> oi.getItem().getId().equals(item.getId()));
-	    if (itemJaAdicionado) {
-	        throw new IllegalStateException("Item já adicionado ao orçamento.");
-	    }
-	    OrcamentoItem orcamentoItem = new OrcamentoItem(this, item, quantidade);
-	    orcamentoItens.add(orcamentoItem);
-	    setValorTotal();
-	}
-	public void removeItem(Item item) {
-		orcamentoItens.removeIf(oi -> oi.getItem().getId().equals(item.getId()));
-		item.getOrcamentos().remove(this);
-	    setValorTotal();
-	}
-
-	public void setValorTotal() {
-	    double valorItens = 0.0;
-	    if (orcamentoItens != null) {
-	        valorItens = orcamentoItens.stream()
-	            .filter(Objects::nonNull)
-	            .mapToDouble(item -> item.getSubtotal() != null ? item.getSubtotal() : 0.0)
-	            .sum();
-	    }
-	    
-	    double precoTema = (this.tema != null && this.tema.getPreco() != null) ? 
-	        this.tema.getPreco() : 0.0;
-	    
-	    this.valorTotal = valorItens + precoTema;
-	}
-	
+    
 }
