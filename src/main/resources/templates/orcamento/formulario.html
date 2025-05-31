@@ -226,6 +226,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 					th:action="${orcamento?.id != null} ? @{/orcamento/{id}(id=${orcamento.id})} : @{/orcamento}"
 					method="post" th:object="${orcamento}">
 <<<<<<< HEAD
+<<<<<<< HEAD
 					
 					<div th:if="${#fields != null and #fields.hasErrors('*')}">
 						<ul>
@@ -383,6 +384,90 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 =======
 
 >>>>>>> ccb898514bdf68cdd3c061b240c691b878e5260e
+=======
+
+					<div th:if="${#fields != null and #fields.hasErrors('*')}">
+						<ul>
+							<li th:each="err : ${#fields.errors('*')}" th:text="${err}"></li>
+						</ul>
+					</div>
+
+					<div th:if="${error}" class="alert alert-danger">
+						<span th:text="${error}"></span>
+						<button type="button" class="close"
+							onclick="this.parentElement.style.display='none'">×</button>
+					</div>
+
+					<input type="hidden" th:field="*{id}"
+						th:if="${orcamento?.id != null}"> <input type="hidden"
+						name="_method" value="put" th:if="${orcamento?.id != null}" />
+
+					<div>
+						<label for="cliente">Cliente:</label> <select id="cliente"
+							name="clienteId" required
+							th:classappend="${#fields.hasErrors('cliente')} ? 'is-invalid' : ''">
+							<option value="">Selecione um cliente</option>
+							<option th:each="cliente : ${clientes}" th:value="${cliente.id}"
+								th:text="${cliente.nome}"
+								th:selected="${orcamento.cliente != null and orcamento.cliente.id == cliente.id}">
+							</option>
+						</select> <span th:if="${#fields.hasErrors('cliente')}"
+							th:errors="*{cliente}" class="error"></span>
+					</div>
+
+					<div>
+						<label for="tema">Tema:</label> <select id="tema" name="temaId"
+							required
+							th:classappend="${#fields.hasErrors('tema')} ? 'is-invalid' : ''">
+							<option value="">Selecione um tema</option>
+							<option th:each="tema : ${temas}" th:value="${tema.id}"
+								th:text="${tema.descricao}"
+								th:selected="${orcamento.tema != null and orcamento.tema.id == tema.id}">
+							</option>
+						</select> <span th:if="${#fields.hasErrors('tema')}" th:errors="*{tema}"
+							class="error"></span>
+					</div>
+
+					<div>
+						<label for="dtHoraInicio">Data e Hora do Evento:</label> <input
+							type="datetime-local" th:field="*{dtHoraInicio}"
+							th:value="${orcamento.dtHoraInicio != null ? 
+                 orcamento.dtHoraInicio.format(T(java.time.format.DateTimeFormatter).ofPattern('yyyy-MM-dd')) + 'T' + 
+                 orcamento.dtHoraInicio.format(T(java.time.format.DateTimeFormatter).ofPattern('HH:mm')) : ''}"
+							class="form-control" required> <span
+							th:if="${#fields.hasErrors('dtHoraInicio')}"
+							th:errors="*{dtHoraInicio}" class="error"></span>
+					</div>
+
+					<div>
+						<label for="status">Status:</label> <select id="status"
+							th:field="*{status}" required
+							th:classappend="${#fields.hasErrors('status')} ? 'is-invalid' : ''">
+							<option value="">Selecione um status</option>
+							<option
+								th:each="status : ${T(com.fateczl.BuffetRafaela.entities.enums.StatusOrcamento).values()}"
+								th:value="${status}" th:text="${status}"></option>
+						</select> <span th:if="${#fields.hasErrors('status')}"
+							th:errors="*{status}" class="error"></span>
+					</div>
+
+					<div id="items-container">
+						<div th:each="itemOrcamento, itemStat : ${orcamento.itens}"
+							class="item-row mb-2">
+							<select th:name="|itens[${itemStat.index}].item.id|"
+								class="form-control item-select" required
+								onchange="atualizarSelecoes()">
+								<option value="">Selecione um item</option>
+								<option th:each="itemDisponivel : ${itens}"
+									th:value="${itemDisponivel.id}"
+									th:text="${itemDisponivel.descricao}"
+									th:selected="${itemOrcamento.item != null and itemOrcamento.item.id == itemDisponivel.id}"></option>
+							</select> <input type="number"
+								th:name="|itens[${itemStat.index}].quantidade|"
+								th:value="${itemOrcamento.quantidade}" min="1" required
+								class="form-control" placeholder="Quantidade" />
+
+>>>>>>> ccb898514bdf68cdd3c061b240c691b878e5260e
 							<button type="button" onclick="removeItemRow(this)"
 								class="btn btn-danger">
 								<i class="fas fa-times"></i> Remover
@@ -393,7 +478,11 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 							class="item-row mb-2">
 							<select name="itens[0].item.id" class="form-control item-select"
 <<<<<<< HEAD
+<<<<<<< HEAD
 								onchange="atualizarSelecoes()">
+=======
+								required onchange="atualizarSelecoes()">
+>>>>>>> ccb898514bdf68cdd3c061b240c691b878e5260e
 =======
 								required onchange="atualizarSelecoes()">
 >>>>>>> ccb898514bdf68cdd3c061b240c691b878e5260e
@@ -403,6 +492,10 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 							</select> <input type="number" name="itens[0].quantidade" value="1"
 								min="1" required class="form-control" placeholder="Quantidade" />
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+
+>>>>>>> ccb898514bdf68cdd3c061b240c691b878e5260e
 =======
 
 >>>>>>> ccb898514bdf68cdd3c061b240c691b878e5260e
@@ -416,8 +509,12 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 					<div id="item-template" style="display: none;">
 						<div class="item-row mb-2">
 <<<<<<< HEAD
+<<<<<<< HEAD
 							<select name="itemSelecionadoTemplate"
 								class="form-control item-select"
+=======
+							<select class="form-control item-select" required
+>>>>>>> ccb898514bdf68cdd3c061b240c691b878e5260e
 =======
 							<select class="form-control item-select" required
 >>>>>>> ccb898514bdf68cdd3c061b240c691b878e5260e
@@ -428,6 +525,10 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 							</select> <input type="number" min="1" value="1" required
 								class="form-control" placeholder="Quantidade" />
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+
+>>>>>>> ccb898514bdf68cdd3c061b240c691b878e5260e
 =======
 
 >>>>>>> ccb898514bdf68cdd3c061b240c691b878e5260e
@@ -442,6 +543,10 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 						Item</button>
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+
+>>>>>>> ccb898514bdf68cdd3c061b240c691b878e5260e
 =======
 
 >>>>>>> ccb898514bdf68cdd3c061b240c691b878e5260e
@@ -557,6 +662,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
         });
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         let itemIndex = document.querySelectorAll('#items-container .item-row').length;
 
     	function addItemRow() {
@@ -597,6 +703,8 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
             const selecionados = Array.from(selects).map(select => select.value).filter(v => v);
 
 =======
+=======
+>>>>>>> ccb898514bdf68cdd3c061b240c691b878e5260e
         let itemIndex = 1;
 
         function addNewItemRow() {
@@ -697,6 +805,9 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
             const selects = document.querySelectorAll('.item-select');
             const selecionados = Array.from(selects).map(select => select.value).filter(v => v);
 
+<<<<<<< HEAD
+>>>>>>> ccb898514bdf68cdd3c061b240c691b878e5260e
+=======
 >>>>>>> ccb898514bdf68cdd3c061b240c691b878e5260e
             selects.forEach(select => {
                 Array.from(select.options).forEach(option => {

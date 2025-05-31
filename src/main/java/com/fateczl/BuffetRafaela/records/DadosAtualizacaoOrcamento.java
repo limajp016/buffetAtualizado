@@ -52,5 +52,9 @@ public record DadosAtualizacaoOrcamento(
         @NotNull Item item,
         @NotNull @Positive Integer quantidade
     ) {}
+<<<<<<< HEAD
+}
+>>>>>>> ccb898514bdf68cdd3c061b240c691b878e5260e
+=======
 }
 >>>>>>> ccb898514bdf68cdd3c061b240c691b878e5260e
