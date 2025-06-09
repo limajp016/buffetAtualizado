@@ -9,43 +9,52 @@
         .box {
             max-width: 600px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 30px;
             background-color: #f8f9fa;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .box div {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
         .box label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             font-weight: 500;
         }
-        .box input, .box textarea {
+        .box input, .box textarea, .box select {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             border: 1px solid #ced4da;
             border-radius: 4px;
+            box-sizing: border-box;
         }
         .box button {
             background-color: #007bff;
             color: white;
-            padding: 10px 20px;
+            padding: 12px 24px;
             border: none;
-            border-radius: 5px;
+            border-radius: 4px;
             cursor: pointer;
+            font-size: 1em;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+        .box button:hover {
+            background-color: #0069d9;
         }
         .image-preview {
             max-width: 200px;
             max-height: 200px;
-            margin-top: 10px;
+            margin: 10px auto;
             display: block;
+            border-radius: 4px;
         }
         .alert {
-            padding: 10px;
-            margin-bottom: 15px;
-            border-radius: 5px;
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            text-align: center;
         }
         .alert-success {
             background-color: #d4edda;
@@ -56,23 +65,42 @@
             color: #721c24;
         }
         .remove-image {
-            margin-top: 5px;
+            margin-top: 8px;
             color: #dc3545;
             cursor: pointer;
             font-size: 0.9em;
+            text-align: center;
+            display: block;
         }
         .remove-image:hover {
             text-decoration: underline;
+        }
+        .form-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .form-footer {
+            margin-top: 25px;
+            text-align: center;
+        }
+        .file-input-container {
+            border: 1px dashed #ced4da;
+            padding: 15px;
+            border-radius: 4px;
+            text-align: center;
+            background-color: #fefefe;
         }
     </style>
 </head>
 <body>
     <div layout:fragment="conteudo">
         <div class="box">
-            <h1 style="text-align: center;">
-                <span th:if="${tema.id != null}">Editar Tema</span>
-                <span th:if="${tema.id == null}">Novo Tema</span>
-            </h1>
+            <div class="form-header">
+                <h1>
+                    <span th:if="${tema.id != null}">Editar Tema</span>
+                    <span th:if="${tema.id == null}">Novo Tema</span>
+                </h1>
+            </div>
 
             <div th:if="${mensagem}" class="alert alert-success">
                 <span th:text="${mensagem}"></span>
@@ -101,11 +129,13 @@
 
                 <div>
                     <label for="imagem">Imagem:</label>
-                    <input type="file" id="imagem" name="imagem" accept="image/jpeg, image/png" onchange="previewImage(this)">
+                    <div class="file-input-container">
+                        <input type="file" id="imagem" name="imagem" accept="image/jpeg, image/png" onchange="previewImage(this)">
+                    </div>
                     
                     <div th:if="${tema.imagemBase64 != null}">
                         <img id="imagePreview" class="image-preview" th:src="${tema.imagemBase64}">
-                        <div class="remove-image" onclick="removeImage()">Remover imagem</div>
+                        <span class="remove-image" onclick="removeImage()">Remover imagem</span>
                         <input type="hidden" id="removerImagem" name="removerImagem" value="false">
                     </div>
                     <div th:unless="${tema.imagemBase64 != null}">
@@ -113,13 +143,12 @@
                     </div>
                 </div>
 
-                <div style="margin-top: 20px;">
+                <div class="form-footer">
                     <button type="submit" class="btn-submit"
                             th:text="${tema != null and tema.id != null} ? 'Atualizar' : 'Cadastrar'"></button>
+                    <a th:href="@{/tema}" style="display: inline-block; margin-top: 15px; color: #6c757d; text-decoration: none;">← Voltar para a listagem</a>
                 </div>
             </form>
-
-            <a th:href="@{/tema}" style="display: inline-block; margin-top: 15px;">← Voltar para a listagem</a>
         </div>
     </div>
 

@@ -13,7 +13,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
 public record DadosAtualizacaoOrcamento(
-<<<<<<< HEAD
 	    @NotNull Long id,
 	    Cliente cliente,
 	    Tema tema,
@@ -33,28 +32,3 @@ public record DadosAtualizacaoOrcamento(
 	        @NotNull @Positive Integer quantidade
 	    ) {}
 	}
-=======
-    @NotNull Long id,
-    Cliente cliente,
-    Tema tema,
-    List<ItemQuantidade> itens,
-    LocalDateTime dtHoraInicio,
-    StatusOrcamento status,
-    String logradouro,
-    String bairro,
-    String numero,
-    String cidade,
-    Estados uf,
-    String cep,
-    String complemento
-) {
-    public record ItemQuantidade(
-        @NotNull Item item,
-        @NotNull @Positive Integer quantidade
-    ) {}
-<<<<<<< HEAD
-}
->>>>>>> ccb898514bdf68cdd3c061b240c691b878e5260e
-=======
-}
->>>>>>> ccb898514bdf68cdd3c061b240c691b878e5260e

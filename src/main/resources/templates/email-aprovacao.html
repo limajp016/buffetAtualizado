@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Aprovação de Orçamento</title>
+</head>
+<body>
+    <h3>Olá, <span th:text="${orcamento.cliente.nome}">Cliente</span>!</h3>
+
+    <p>Recebemos seu orçamento com os seguintes dados:</p>
+
+    <ul>
+        <li>Data e Hora da Festa: <span th:text="${#temporals.format(orcamento.dtHoraInicio, 'dd/MM/yyyy HH:mm')}">Data</span></li>
+        <li>Tema: <span th:text="${orcamento.tema.descricao}">Tema</span></li>
+        <li>Valor Total: R$ <span th:text="${orcamento.valorTotal}">0.00</span></li>
+        <li>Endereço: 
+            <span th:text="${orcamento.logradouro}">Rua</span>, 
+            <span th:text="${orcamento.numero}">123</span>, 
+            <span th:text="${orcamento.bairro}">Bairro</span>, 
+            <span th:text="${orcamento.cidade}">Cidade</span> - 
+            <span th:text="${orcamento.uf}">UF</span>, 
+            CEP: <span th:text="${orcamento.cep}">00000-000</span>
+        </li>
+    </ul>
+
+    <p>Itens do orçamento:</p>
+    <ul>
+        <li th:each="item : ${orcamento.itens}">
+            <span th:text="${item.item.descricao}">Item</span> - Quantidade: <span th:text="${item.quantidade}">1</span>
+        </li>
+    </ul>
+
+    <p>Por favor, <a th:href="@{http://localhost:8080/orcamento/aprovar/{id}(id=${orcamento.id})}">clique aqui</a> para aprovar seu orçamento.</p>
+    <p>Caso deseje, <a th:href="@{http://localhost:8080/orcamento/reprovar/{id}(id=${orcamento.id})}">clique aqui</a> para reprovar este orçamento.</p>
+
+    <p>Atenciosamente,<br>Equipe Aluguel de Festas</p>
+</body>
+</html>

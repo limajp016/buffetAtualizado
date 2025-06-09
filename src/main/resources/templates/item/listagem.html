@@ -187,6 +187,13 @@ tr:hover {
 .actions-cell {
 	white-space: nowrap;
 }
+
+a.active {
+	background-color: #007bff;
+	color: white;
+	padding: 4px 8px;
+	border-radius: 4px;
+}
 </style>
 </head>
 <body>
@@ -232,7 +239,7 @@ tr:hover {
 						</tr>
 					</thead>
 					<tbody>
-						<tr th:each="item : ${listaItens}">
+						<tr th:each="item : ${pagina.content}">
 							<td>
 								<div th:if="${item.imagemBase64 != null}">
 									<img th:src="${item.imagemBase64}" class="item-imagem"
@@ -263,12 +270,25 @@ tr:hover {
 								</div>
 							</td>
 						</tr>
-						<tr th:if="${#lists.isEmpty(listaItens)}">
+						<tr th:if="${pagina.empty}">
 							<td colspan="7" class="empty-message">Nenhum item cadastrado
 							</td>
 						</tr>
 					</tbody>
 				</table>
+
+				<div
+				style="margin-top: 20px; display: flex; justify-content: center; gap: 10px;">
+				<a th:if="${pagina.hasPrevious()}"
+					th:href="@{|/item?page=${pagina.number - 1}&size=${pagina.size}|}"
+					class="btn-voltar">Anterior</a> <span>Página <span
+					th:text="${pagina.number + 1}"></span> de <span
+					th:text="${pagina.totalPages}"></span></span> <a
+					th:if="${pagina.hasNext()}"
+					th:href="@{|/item?page=${pagina.number + 1}&size=${pagina.size}|}"
+					class="btn-novo">Próxima</a>
+			</div>
+
 			</div>
 		</div>
 

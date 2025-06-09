@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Orçamento Reprovado</title>
+</head>
+<body>
+    <h1 th:if="${reprovado}">Seu orçamento foi reprovado.</h1>
+    <h1 th:if="${!reprovado}">Não foi possível reprovar seu orçamento.</h1>
+</body>
+</html>

@@ -87,6 +87,9 @@ public class Orcamento {
     @Column(name = "complemento")
     private String complemento;
     
+    private LocalDateTime dataEnvioEmail;
+    private LocalDateTime dataAberturaEmail;
+    
     public Orcamento() {
     }
 
@@ -292,5 +295,20 @@ public class Orcamento {
 	public void setComplemento(String complemento) {
 		this.complemento = complemento;
 	}
-    
+
+	public LocalDateTime getDataEnvioEmail() {
+		return dataEnvioEmail;
+	}
+
+	public void setDataEnvioEmail(LocalDateTime dataEnvioEmail) {
+		this.dataEnvioEmail = dataEnvioEmail;
+	}
+
+	public LocalDateTime getDataAberturaEmail() {
+		return dataAberturaEmail;
+	}
+
+	public void setDataAberturaEmail(LocalDateTime dataAberturaEmail) {
+		this.dataAberturaEmail = dataAberturaEmail;
+	}
 }

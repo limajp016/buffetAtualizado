@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <h3>Olá, <span th:text="${orcamento.cliente.nome}">Cliente</span>!</h3>
+
+    <p>O seu orçamento foi aprovado e gerou um <strong>pedido</strong> vinculado!</p>
+
+    <p>Você pode acessar o pedido através do link abaixo:</p>
+
+    <p>
+        <a th:href="${urlPdf}">Download do Pedido em PDF</a>
+    </p>
+
+    <p>Obrigado pela confiança.</p>
+</body>
+</html>

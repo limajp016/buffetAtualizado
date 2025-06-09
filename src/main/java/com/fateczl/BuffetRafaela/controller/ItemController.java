@@ -11,6 +11,10 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -207,18 +211,22 @@ public class ItemController {
 	}
 
 	@GetMapping
-	public String listar(Model model) {
-	    List<Item> itens = repository.findAll();
-	    
-	    itens.forEach(item -> {
+	public String listar(@RequestParam(defaultValue = "0") int page,
+	                     @RequestParam(defaultValue = "4") int size,
+	                     Model model) {
+
+	    Pageable pageable = PageRequest.of(page, size, Sort.by("descricao").ascending());
+	    Page<Item> pagina = repository.findAll(pageable);
+
+	    pagina.forEach(item -> {
 	        if (item.getImagem() != null && item.getImagem().length > 0) {
 	            String mimeType = determineImageMimeType(item.getImagem());
-	            item.setImagemBase64("data:" + mimeType + ";base64," + 
-	                Base64.getEncoder().encodeToString(item.getImagem()));
+	            item.setImagemBase64("data:" + mimeType + ";base64," +
+	                    Base64.getEncoder().encodeToString(item.getImagem()));
 	        }
 	    });
 
-	    model.addAttribute("listaItens", itens);
+	    model.addAttribute("pagina", pagina);
 	    return "item/listagem";
 	}
 

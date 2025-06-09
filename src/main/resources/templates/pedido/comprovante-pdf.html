@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; }
+        h2 { text-align: center; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #000; padding: 6px; }
+    </style>
+</head>
+<body>
+
+<h2>Comprovante do Pedido #[[${pedido.pedidoId}]]</h2>
+
+<p><strong>Cliente:</strong> [[${pedido.clienteNome}]]</p>
+<p><strong>Data do Evento:</strong> [[${#temporals.format(pedido.dataEvento, 'dd/MM/yyyy HH:mm')}]]</p>
+<p><strong>Endereço:</strong> [[${pedido.logradouro}]], [[${pedido.numero}]], [[${pedido.bairro}]], [[${pedido.cidade}]] - [[${pedido.uf}]], [[${pedido.cep}]]</p>
+
+<h3>Tema: [[${pedido.temaDescricao}]]</h3>
+
+<table>
+    <thead>
+    <tr>
+        <th>Item</th>
+        <th>Qtd</th>
+        <th>Valor Unit.</th>
+        <th>Total</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="item : ${itens}">
+        <td th:text="${item.itemDescricao}"></td>
+        <td th:text="${item.itemQuantidade}"></td>
+        <td th:text="${item.itemValorVenda}"></td>
+        <td th:text="${item.itemPrecoUnitario}"></td>
+    </tr>
+    </tbody>
+</table>
+
+<p><strong>Valor Total:</strong> R$ [[${pedido.valorTotal}]]</p>
+
+</body>
+</html>

@@ -12,6 +12,9 @@ import java.util.List;
 import javax.imageio.ImageIO;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -59,20 +62,25 @@ public class TemaController {
     }
 
     @GetMapping
-    public String carregaPaginaListagem(Model model) {
-        List<Tema> temas = repository.findAll(Sort.by("descricao").ascending());
+    public String listarTemas(@RequestParam(defaultValue = "0") int page,
+                              @RequestParam(defaultValue = "4") int size,
+                              Model model) {
 
-        temas.forEach(tema -> {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("descricao").ascending());
+        Page<Tema> pagina = repository.findAll(pageable);
+
+        pagina.forEach(tema -> {
             if (tema.getImagem() != null) {
                 String mimeType = determineImageMimeType(tema.getImagem());
-                tema.setImagemBase64("data:" + mimeType + ";base64," + 
-                    Base64.getEncoder().encodeToString(tema.getImagem()));
+                tema.setImagemBase64("data:" + mimeType + ";base64," +
+                        Base64.getEncoder().encodeToString(tema.getImagem()));
             }
         });
 
-        model.addAttribute("listaTemas", temas);
+        model.addAttribute("pagina", pagina);
         return "tema/listagem";
     }
+
 
     @PostMapping
     @Transactional

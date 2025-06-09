@@ -3,6 +3,9 @@ package com.fateczl.BuffetRafaela.controller;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -55,10 +58,17 @@ public class ClienteController {
 	}
 	
 	@GetMapping
-	public String carregaPaginaListagem(Model model) {
-		model.addAttribute("listaClientes", repository.findAll(Sort.by("nome").ascending()));
-		return "cliente/listagem";
+	public String listarClientes(@RequestParam(defaultValue = "0") int page,
+	                             @RequestParam(defaultValue = "5") int size,
+	                             Model model) {
+
+	    Pageable pageable = PageRequest.of(page, size, Sort.by("nome").ascending());
+	    Page<Cliente> pagina = repository.findAll(pageable);
+
+	    model.addAttribute("pagina", pagina);
+	    return "cliente/listagem";
 	}
+
 	
 	@PostMapping
 	@Transactional

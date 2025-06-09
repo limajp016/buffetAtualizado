@@ -1,7 +1,9 @@
 package com.fateczl.BuffetRafaela.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -43,9 +45,13 @@ public class CategoriaController {
 	}
 	
 	@GetMapping
-	public String carregaPaginaListagem(Model model) {
-		model.addAttribute("listaCategoria", repository.findAll(Sort.by("descricao").ascending()));
-		return "categoria/listagem";
+	public String carregaPaginaListagem(
+	        Model model,
+	        @PageableDefault(size = 8, sort = "descricao") Pageable pageable) {
+
+	    Page<Categoria> pagina = repository.findAll(pageable);
+	    model.addAttribute("pagina", pagina);
+	    return "categoria/listagem";
 	}
 	
 	@PostMapping

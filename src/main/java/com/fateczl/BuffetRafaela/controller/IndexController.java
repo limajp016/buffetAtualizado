@@ -10,7 +10,6 @@ import com.fateczl.BuffetRafaela.repositories.CategoriaRepository;
 import com.fateczl.BuffetRafaela.repositories.ClienteRepository;
 import com.fateczl.BuffetRafaela.repositories.ItemRepository;
 import com.fateczl.BuffetRafaela.repositories.OrcamentoRepository;
-import com.fateczl.BuffetRafaela.repositories.PedidoRepository;
 import com.fateczl.BuffetRafaela.repositories.TemaRepository;
 
 @Controller
@@ -32,8 +31,6 @@ public class IndexController {
     @Autowired
     private OrcamentoRepository orcamentoRepository;
     
-    @Autowired
-    private PedidoRepository pedidoRepository;
 
     @GetMapping
     public String index(Model model) {
@@ -42,7 +39,6 @@ public class IndexController {
         model.addAttribute("totalClientes", clienteRepository.count());
         model.addAttribute("totalTemas", temaRepository.count());
         model.addAttribute("totalOrcamentos", orcamentoRepository.count());
-        model.addAttribute("totalPedidos", pedidoRepository.count());
         
         return "index";
     }
