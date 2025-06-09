@@ -39,7 +39,7 @@ public class EmailService {
 	private String hostUrl;
 
 	private InternetAddress criarRemetenteFormatado() throws UnsupportedEncodingException {
-		String nomeRemetente = MimeUtility.encodeText("Sistema de Aluguel de Buffet", "UTF-8", "B");
+		String nomeRemetente = MimeUtility.encodeText("Buffet Managment - Sistema de Gerenciamento de Buffets", "UTF-8", "B");
 		return new InternetAddress(mailUsername, nomeRemetente);
 	}
 
